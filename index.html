@@ -62,6 +62,13 @@
   .inop b{color:var(--amber)}
 
   section{background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:15px; margin:14px 0}
+  details.panel{background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:15px; margin:14px 0}
+  details.panel>summary{cursor:pointer; list-style:none; display:flex; align-items:center; justify-content:space-between; gap:10px; min-height:30px}
+  details.panel>summary::-webkit-details-marker{display:none}
+  details.panel>summary h2{margin:0}
+  details.panel>summary .chev{color:var(--cyan); font-size:12px; font-weight:700; letter-spacing:.06em; font-family:var(--mono); white-space:nowrap}
+  details.panel[open]>summary .chev::after{content:" ▴"}
+  details.panel:not([open])>summary .chev::after{content:" ▾"}
   h2{margin:0 0 4px; font-size:13px; letter-spacing:.09em; text-transform:uppercase; color:var(--cyan); font-weight:650}
   .sub{margin:0 0 13px; font-size:12px; color:var(--muted)}
 
@@ -73,6 +80,8 @@
   input[inputmode]{font-family:var(--mono)}
   input:focus,select:focus{outline:2px solid var(--cyan); outline-offset:0; border-color:transparent}
   input.from-wx{ color:var(--cyan); font-weight:700; box-shadow:inset 0 0 0 2px var(--cyan) }
+  input.needs{ box-shadow:inset 0 0 0 2px var(--red) }
+  input.ok{ box-shadow:inset 0 0 0 2px var(--green) }
   .grid{display:grid; gap:11px}
   .g2{grid-template-columns:1fr 1fr}
   .g3{grid-template-columns:repeat(3,1fr)}
@@ -180,7 +189,11 @@
   .seg button+button{border-left:1px solid var(--line)}
   .dimwrap{display:inline-flex; align-items:center; gap:9px; flex:1 1 150px; min-width:128px}
   .dimwrap .dl{font-size:11px; color:var(--muted); letter-spacing:.12em; font-family:var(--mono)}
-  #dimRange{flex:1; accent-color:var(--cyan); height:30px; min-width:72px}
+  #dimRange{ -webkit-appearance:none; appearance:none; flex:1; min-width:72px; height:30px; background:transparent; cursor:pointer }
+  #dimRange::-webkit-slider-runnable-track{ height:8px; border-radius:5px; background:var(--line); border:1px solid var(--line) }
+  #dimRange::-webkit-slider-thumb{ -webkit-appearance:none; appearance:none; width:26px; height:26px; margin-top:-10px; border-radius:50%; background:var(--cyan); border:2px solid var(--panel); box-shadow:0 0 0 1px var(--cyan) }
+  #dimRange::-moz-range-track{ height:8px; border-radius:5px; background:var(--line) }
+  #dimRange::-moz-range-thumb{ width:24px; height:24px; border-radius:50%; background:var(--cyan); border:2px solid var(--panel) }
   .warmbtn{padding:9px 14px; font-size:12px; font-weight:700; letter-spacing:.06em; color:var(--muted);
     background:transparent; border:1px solid var(--line); border-radius:9px; min-height:42px; font-family:var(--sans)}
   .warmbtn.on{border-color:var(--amber); color:var(--amber)}
@@ -251,8 +264,7 @@
 </style>
 <script>
 /* set theme pre-paint to avoid a bright flash in a dark cockpit */
-try{var p=JSON.parse(localStorage.getItem('tmcEprPrefs')||'{}');
-var t=p.theme==='day'?'day':(p.theme==='night'?'night':((window.matchMedia&&matchMedia('(prefers-color-scheme: light)').matches)?'day':'night'));
+try{var t=(window.matchMedia&&matchMedia('(prefers-color-scheme: light)').matches)?'day':'night';
 document.documentElement.setAttribute('data-theme',t);}catch(e){}
 </script>
 </head>
@@ -265,13 +277,7 @@ document.documentElement.setAttribute('data-theme',t);}catch(e){}
     <div class="ttl">Manual Thrust<small>TMC inop · thrust backup</small></div>
     <div class="net"><span id="netDot" class="dot"></span><span id="netTxt">…</span></div>
     <div class="ctrls">
-      <div class="seg" id="themeSeg">
-        <button type="button" data-theme="day">Day</button>
-        <button type="button" data-theme="night">Night</button>
-        <button type="button" data-theme="auto">Auto</button>
-      </div>
-      <button type="button" class="warmbtn" id="flightBtn">IN-FLIGHT</button>
-      <button type="button" class="warmbtn" id="warmBtn">WARM</button>
+      <button type="button" class="warmbtn" id="flightBtn">In-Flight</button>
       <label class="dimwrap"><span class="dl">DIM</span><input type="range" id="dimRange" min="0" max="80" value="0" aria-label="Screen dim"></label>
     </div>
   </div>
@@ -282,7 +288,7 @@ document.documentElement.setAttribute('data-theme',t);}catch(e){}
   <!-- ============ BUILD CARD ============ -->
   <section id="buildPanel">
     <h2>Build flight card</h2>
-    <p class="sub">Enter the pair and tap Pull weather — it fills OAT, altimeter and pressure altitude for both ends, then lives offline. Fields stay editable; type them from ATIS/FMC if you’re already off-grid.</p>
+    <p class="sub">Enter the pair and tap Pull WX & PA — it fills OAT, altimeter and pressure altitude for both ends, then lives offline. Fields stay editable; type them from ATIS/FMC if you’re already off-grid.</p>
 
     <div class="field" style="margin-bottom:12px"><label>Aircraft / engine</label><select id="engineSel"></select></div>
 
@@ -339,8 +345,8 @@ document.documentElement.setAttribute('data-theme',t);}catch(e){}
     </details>
 
     <div class="btnrow">
-      <button class="ghost" id="fetchBtn" type="button">⤓ Pull weather &amp; PA</button>
-      <button class="primary" id="buildBtn" type="button">Build card</button>
+      <button class="ghost" id="fetchBtn" type="button">⤓ Pull WX &amp; PA</button>
+      <button class="primary" id="buildBtn" type="button">Build Card</button>
       <button class="ghost" id="clearBtn" type="button">Clear</button>
     </div>
     <div class="status" id="buildStatus"></div>
@@ -352,8 +358,8 @@ document.documentElement.setAttribute('data-theme',t);}catch(e){}
     <p class="sub">Saved on this device — reopens offline. <span id="savedNote" style="color:var(--green)"></span></p>
     <div class="card" id="cardBody"></div>
     <div class="btnrow">
-      <button class="ghost" id="printBtn" type="button">⎙ Print / save PDF</button>
-      <button class="ghost" id="editBtn" type="button">Edit inputs</button>
+      <button class="ghost" id="printBtn" type="button">⎙ Print / Save PDF</button>
+      <button class="ghost" id="editBtn" type="button">Edit Inputs</button>
     </div>
   </section>
 
@@ -361,8 +367,8 @@ document.documentElement.setAttribute('data-theme',t);}catch(e){}
   <div class="col">
 
   <!-- ============ MANUAL LOOKUP ============ -->
-  <section id="manualPanel">
-    <h2>Manual lookup</h2>
+  <details id="manualPanel" class="panel">
+    <summary><h2>Manual lookup</h2><span class="chev">OPEN</span></summary>
     <p class="sub">Exact chart cells by phase — the in-flight authority. Pick the published grid values; corrections are chart-accurate per phase.</p>
     <div class="tabs" id="tabs"></div>
     <div class="grid g2">
@@ -383,14 +389,14 @@ document.documentElement.setAttribute('data-theme',t);}catch(e){}
       <div class="bh">Bracketing chart cells (cross-check)</div>
       <div class="bgrid" id="mBracket"></div>
     </div>
-  </section>
+  </details>
 
   <!-- ============ RAW TABLES ============ -->
-  <section id="rawPanel">
-    <h2>Full charts</h2>
+  <details id="rawPanel" class="panel">
+    <summary><h2>Full charts</h2><span class="chev">OPEN</span></summary>
     <p class="sub">The complete transcribed tables, for direct reading.</p>
     <div id="rawTables"></div>
-  </section>
+  </details>
 
   </div>
   </div>
@@ -409,7 +415,7 @@ document.documentElement.setAttribute('data-theme',t);}catch(e){}
 
 <script>
 /* ====================== CACHE / SW ====================== */
-const CACHE_VERSION = "tmc-epr-v1.1.2";
+const CACHE_VERSION = "tmc-epr-v1.1.3";
 document.getElementById("ver").textContent = CACHE_VERSION;
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
@@ -875,6 +881,14 @@ const els={
   proxy:$("proxy"),buildStatus:$("buildStatus"),cardOut:$("cardOut"),cardBody:$("cardBody"),savedNote:$("savedNote"),
 };
 const SKEY="tmcEprState";
+/* field state: red = needs input, green = entered, blue (.from-wx) = auto-filled from weather */
+const REQ=["depIcao","arrIcao","depOat","depPa","arrOat","arrPa","cruiseFl"];
+function paintField(k){ const el=els[k]; if(!el) return;
+  const wx=el.classList.contains("from-wx"); const has=el.value.trim()!=="";
+  el.classList.toggle("needs", !wx && !has);
+  el.classList.toggle("ok", !wx && has);
+}
+function paintAll(){ REQ.forEach(paintField); }
 function saveState(extra){
   const s=Object.assign({
     depIcao:els.depIcao.value,arrIcao:els.arrIcao.value,depOat:els.depOat.value,depPa:els.depPa.value,
@@ -930,11 +944,11 @@ $("fetchBtn").addEventListener("click", async ()=>{
       const r=obToFields(a.ob, els.arrOat, els.arrPa);
       got.push(arr+(r.oat!=null?" "+r.oat+"°C":"")+(r.inHg!=null?" · "+r.inHg.toFixed(2)+'"':"")+(r.pa!=null?" · PA "+r.pa:""));
     }
-    setStatus("Pulled  "+got.join("    ")+".  Build card when ready.","ok");
+    setStatus("Pulled  "+got.join("    ")+".  Build Card when ready.","ok");
     saveState();
   }catch(err){
-    setStatus("Couldn’t pull weather ("+err.message+"). Type OAT/PA from ATIS/FMC and Build card — works the same.","err");
-  }finally{ $("fetchBtn").disabled=false; }
+    setStatus("Couldn’t pull weather ("+err.message+"). Type OAT/PA from ATIS/FMC and Build Card — works the same.","err");
+  }finally{ $("fetchBtn").disabled=false; paintAll(); }
 });
 const wxCache={dep:null,arr:null};
 
@@ -1035,7 +1049,7 @@ $("printBtn").addEventListener("click",()=>window.print());
 $("editBtn").addEventListener("click",()=>$("buildPanel").scrollIntoView({behavior:"smooth"}));
 $("clearBtn").addEventListener("click",()=>{
   ["depIcao","arrIcao","depOat","depPa","arrOat","arrPa","cruiseFl"].forEach(k=>{els[k].value="";els[k].classList.remove("from-wx");});
-  wxCache.dep=wxCache.arr=null; setStatus("Cleared.","");
+  wxCache.dep=wxCache.arr=null; setStatus("Cleared.",""); paintAll();
 });
 
 /* PA helper */
@@ -1045,8 +1059,8 @@ function helpPA(){
   if(e==null||q==null){$("helpOut").textContent="Enter elevation and altimeter.";$("helpOut").className="status err";return null;}
   const pa=paFromElevAltim(e,q,u); $("helpOut").textContent="PA = "+pa+" ft"; $("helpOut").className="status ok"; return pa;
 }
-$("helpToDep").addEventListener("click",()=>{const p=helpPA();if(p!=null){els.depPa.value=p;els.depPa.classList.remove("from-wx");}saveState();});
-$("helpToArr").addEventListener("click",()=>{const p=helpPA();if(p!=null){els.arrPa.value=p;els.arrPa.classList.remove("from-wx");}saveState();});
+$("helpToDep").addEventListener("click",()=>{const p=helpPA();if(p!=null){els.depPa.value=p;els.depPa.classList.remove("from-wx");paintField("depPa");}saveState();});
+$("helpToArr").addEventListener("click",()=>{const p=helpPA();if(p!=null){els.arrPa.value=p;els.arrPa.classList.remove("from-wx");paintField("arrPa");}saveState();});
 
 /* ====================== MANUAL LOOKUP ====================== */
 let mPhase="takeoff";
@@ -1155,6 +1169,7 @@ function highlightChart(key, ri, ci, open){
 }
 /* scroll the page to a phase chart and center its highlighted cell horizontally */
 function jumpToChart(key){
+  const panel=document.getElementById("rawPanel"); if(panel) panel.open=true;
   const det=document.getElementById("det-"+key); if(det) det.open=true;
   const tbl=document.getElementById("raw-"+key); if(!tbl) return;
   tbl.scrollIntoView({behavior:"smooth",block:"center"});
@@ -1166,29 +1181,27 @@ function jumpToChart(key){
 /* ====================== DISPLAY: theme / dim / orientation ====================== */
 const PKEY="tmcEprPrefs";
 let prefs=Object.assign({theme:"auto",dim:0,warm:false,flight:false},(()=>{try{return JSON.parse(localStorage.getItem(PKEY)||"{}")}catch(e){return{}}})());
+prefs.theme="auto"; prefs.warm=false; /* theme is always Auto, behind the scenes */
 function savePrefs(){try{localStorage.setItem(PKEY,JSON.stringify(prefs));}catch(e){}}
 const lightMQ = window.matchMedia ? window.matchMedia("(prefers-color-scheme: light)") : null;
-function effTheme(){ return prefs.theme==="auto" ? (lightMQ && lightMQ.matches ? "day":"night") : prefs.theme; }
+function effTheme(){ return (lightMQ && lightMQ.matches) ? "day":"night"; }
 function applyTheme(){
   const t=effTheme();
   document.documentElement.setAttribute("data-theme",t);
   const m=document.querySelector('meta[name=theme-color]'); if(m) m.setAttribute("content", t==="day"?"#DCE2E7":"#0B0F12");
-  document.querySelectorAll("#themeSeg button").forEach(b=>b.classList.toggle("on", b.dataset.theme===prefs.theme));
 }
 function applyDim(){
-  const d=$("dimmer"); d.style.opacity=(prefs.dim/100).toFixed(2); d.classList.toggle("warm",!!prefs.warm);
-  $("warmBtn").classList.toggle("on",!!prefs.warm);
+  const d=$("dimmer"); d.style.opacity=(prefs.dim/100).toFixed(2); d.classList.remove("warm");
   const r=$("dimRange"); if(r && +r.value!==prefs.dim) r.value=prefs.dim;
 }
-document.querySelectorAll("#themeSeg button").forEach(b=>{ b.addEventListener("click",()=>{prefs.theme=b.dataset.theme; applyTheme(); savePrefs();}); });
 $("dimRange").addEventListener("input",e=>{ prefs.dim=+e.target.value; applyDim(); savePrefs(); });
-$("warmBtn").addEventListener("click",()=>{ prefs.warm=!prefs.warm; applyDim(); savePrefs(); });
-if(lightMQ){ const h=()=>{ if(prefs.theme==="auto") applyTheme(); }; lightMQ.addEventListener? lightMQ.addEventListener("change",h): lightMQ.addListener(h); }
+if(lightMQ){ const h=()=>applyTheme(); lightMQ.addEventListener? lightMQ.addEventListener("change",h): lightMQ.addListener(h); }
 
 /* in-flight mode: hide setup, enlarge card + manual lookup */
 function applyFlight(){
   document.documentElement.setAttribute("data-flight", prefs.flight?"1":"0");
-  const b=$("flightBtn"); b.classList.toggle("on",!!prefs.flight); b.textContent=prefs.flight?"EXIT":"IN-FLIGHT";
+  const b=$("flightBtn"); b.classList.toggle("on",!!prefs.flight); b.textContent=prefs.flight?"Exit":"In-Flight";
+  if(prefs.flight){ const mp=$("manualPanel"); if(mp) mp.open=true; }
 }
 $("flightBtn").addEventListener("click",()=>{ prefs.flight=!prefs.flight; applyFlight(); savePrefs(); if(prefs.flight) window.scrollTo(0,0); });
 
@@ -1219,13 +1232,13 @@ function restore(){
   syncChips();
   if(s.cardBuilt){ buildCard(); setStatus("Restored saved card.","ok"); }
 }
-[ "depIcao","arrIcao","depOat","depPa","arrOat","arrPa","cruiseFl","proxy"].forEach(k=>els[k].addEventListener("input",()=>{ els[k].classList.remove("from-wx"); saveState(); }));
+[ "depIcao","arrIcao","depOat","depPa","arrOat","arrPa","cruiseFl","proxy"].forEach(k=>els[k].addEventListener("input",()=>{ els[k].classList.remove("from-wx"); if(REQ.includes(k)) paintField(k); saveState(); }));
 applyTheme(); applyDim(); applyFlight(); orient();
 acquireWake();
 $("mShow").addEventListener("click",()=>jumpToChart(mPhase));
 (function(){ const s=loadState(); if(s.profile&&PROFILES[s.profile]){ ACTIVE_PROFILE=s.profile; EPR=PROFILES[s.profile].phases; METRIC=PROFILES[s.profile].metric; } })();
 populateEngines(); applyProfileLabels();
-buildRaw(); buildTabs(); buildManual(); netUpdate(); restore();
+buildRaw(); buildTabs(); buildManual(); netUpdate(); restore(); paintAll();
 </script>
 </body>
 </html>
