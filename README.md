@@ -16,12 +16,15 @@ After that first load it runs entirely offline, airplane mode included.
 Choose the aircraft/engine at the top of the build panel. The readout, card, and
 manual lookup follow the selection and your choice is remembered.
 
-| Aircraft        | Engine        | Sets thrust by |
-|-----------------|---------------|----------------|
-| 757             | PW2037        | EPR            |
-| 757             | PW2040        | EPR            |
-| 767-300ER       | PW4060        | EPR            |
-| 767-300ER       | CF6-80C2B6F   | %N1            |
+| Selector       | Engine        | Sets thrust by |
+|----------------|---------------|----------------|
+| 752 · PW2037   | PW2037        | EPR            |
+| 753 · PW2040   | PW2040        | EPR            |
+| 763 · PW4060   | PW4060        | EPR            |
+| 763 · GECF6    | CF6-80C2B6F   | %N1            |
+
+(752 = 757-200, 753 = 757-300, 763 = 767-300ER with either the PW4060 or the GE
+CF6-80C2B6F.)
 
 The CF6 reads in %N1 instead of EPR; every readout switches units and decimals to
 match. Where a chart leaves a cell blank (high altitude with warm temperatures the
