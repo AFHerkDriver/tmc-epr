@@ -72,6 +72,7 @@
   }
   input[inputmode]{font-family:var(--mono)}
   input:focus,select:focus{outline:2px solid var(--cyan); outline-offset:0; border-color:transparent}
+  input.from-wx{ color:var(--cyan); font-weight:700; box-shadow:inset 0 0 0 2px var(--cyan) }
   .grid{display:grid; gap:11px}
   .g2{grid-template-columns:1fr 1fr}
   .g3{grid-template-columns:repeat(3,1fr)}
@@ -408,7 +409,7 @@ document.documentElement.setAttribute('data-theme',t);}catch(e){}
 
 <script>
 /* ====================== CACHE / SW ====================== */
-const CACHE_VERSION = "tmc-epr-v1.1.1";
+const CACHE_VERSION = "tmc-epr-v1.1.2";
 document.getElementById("ver").textContent = CACHE_VERSION;
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
@@ -857,11 +858,11 @@ function tatFromSAT(satC,mach){ return (satC+273.15)*(1+0.2*mach*mach) - 273.15;
 function altimInHg(a){ if(a==null||!isFinite(+a)) return null; a=+a; return a>100 ? a*0.0295299830714 : a; } // hPa→inHg, pass-through if already inHg
 function obToFields(ob, oatEl, paEl){
   const oat = (ob.temp!=null && isFinite(+ob.temp)) ? Math.round(+ob.temp) : null;
-  if(oat!=null) oatEl.value = oat;
+  if(oat!=null){ oatEl.value = oat; oatEl.classList.add("from-wx"); }
   const elevM = parseFloat(ob.elev); const elevFt = isFinite(elevM) ? elevM*M2FT : 0;
   const inHg = altimInHg(ob.altim);
   let pa = null;
-  if(inHg!=null){ pa = paFromElevAltim(elevFt, inHg, "inhg"); paEl.value = pa; }
+  if(inHg!=null){ pa = paFromElevAltim(elevFt, inHg, "inhg"); paEl.value = pa; paEl.classList.add("from-wx"); }
   return { oat, inHg, pa, elevFt: Math.round(elevFt) };
 }
 
@@ -880,6 +881,7 @@ function saveState(extra){
     arrOat:els.arrOat.value,arrPa:els.arrPa.value,cruiseFl:els.cruiseFl.value,
     packsOff:els.packsOff.checked,engAI:els.engAI.checked,wingAI:els.wingAI.checked,proxy:els.proxy.value,
     profile:ACTIVE_PROFILE,
+    wxFields:["depOat","depPa","arrOat","arrPa"].filter(k=>els[k].classList.contains("from-wx")),
   }, extra||{});
   try{localStorage.setItem(SKEY,JSON.stringify(s));}catch(e){}
 }
@@ -1032,7 +1034,7 @@ $("buildBtn").addEventListener("click",buildCard);
 $("printBtn").addEventListener("click",()=>window.print());
 $("editBtn").addEventListener("click",()=>$("buildPanel").scrollIntoView({behavior:"smooth"}));
 $("clearBtn").addEventListener("click",()=>{
-  ["depIcao","arrIcao","depOat","depPa","arrOat","arrPa","cruiseFl"].forEach(k=>els[k].value="");
+  ["depIcao","arrIcao","depOat","depPa","arrOat","arrPa","cruiseFl"].forEach(k=>{els[k].value="";els[k].classList.remove("from-wx");});
   wxCache.dep=wxCache.arr=null; setStatus("Cleared.","");
 });
 
@@ -1043,8 +1045,8 @@ function helpPA(){
   if(e==null||q==null){$("helpOut").textContent="Enter elevation and altimeter.";$("helpOut").className="status err";return null;}
   const pa=paFromElevAltim(e,q,u); $("helpOut").textContent="PA = "+pa+" ft"; $("helpOut").className="status ok"; return pa;
 }
-$("helpToDep").addEventListener("click",()=>{const p=helpPA();if(p!=null)els.depPa.value=p;saveState();});
-$("helpToArr").addEventListener("click",()=>{const p=helpPA();if(p!=null)els.arrPa.value=p;saveState();});
+$("helpToDep").addEventListener("click",()=>{const p=helpPA();if(p!=null){els.depPa.value=p;els.depPa.classList.remove("from-wx");}saveState();});
+$("helpToArr").addEventListener("click",()=>{const p=helpPA();if(p!=null){els.arrPa.value=p;els.arrPa.classList.remove("from-wx");}saveState();});
 
 /* ====================== MANUAL LOOKUP ====================== */
 let mPhase="takeoff";
@@ -1213,10 +1215,11 @@ function restore(){
   ["depIcao","arrIcao","depOat","depPa","arrOat","arrPa","cruiseFl"].forEach(k=>{ if(s[k]!=null)els[k].value=s[k]; });
   if(s.packsOff)els.packsOff.checked=true; if(s.engAI)els.engAI.checked=true; if(s.wingAI)els.wingAI.checked=true;
   els.proxy.value = s.proxy!=null ? s.proxy : "https://corsproxy.io/?url=";
+  (s.wxFields||[]).forEach(k=>{ if(els[k]) els[k].classList.add("from-wx"); });
   syncChips();
   if(s.cardBuilt){ buildCard(); setStatus("Restored saved card.","ok"); }
 }
-[ "depIcao","arrIcao","depOat","depPa","arrOat","arrPa","cruiseFl","proxy"].forEach(k=>els[k].addEventListener("input",()=>saveState()));
+[ "depIcao","arrIcao","depOat","depPa","arrOat","arrPa","cruiseFl","proxy"].forEach(k=>els[k].addEventListener("input",()=>{ els[k].classList.remove("from-wx"); saveState(); }));
 applyTheme(); applyDim(); applyFlight(); orient();
 acquireWake();
 $("mShow").addEventListener("click",()=>jumpToChart(mPhase));
