@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#0B0F12">
-<title>Manual EPR · PW2037</title>
+<title>Manual Thrust</title>
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="favicon-32.png" sizes="32x32" type="image/png">
 <link rel="apple-touch-icon" href="icon-180.png">
@@ -19,6 +19,7 @@
     --card:#0C1116; --thead:#10171D; --tline:#1D262D;
     --onGreen:#06210F; --onCyan:#04212E; --chipOn:#CFEEFF; --ghostActive:#1A222A;
     --warnBg2:#171204; --warnLine:#4A3A14; --warnTxt:#D9C9A0;
+    --xLine:rgba(41,182,246,.16); --xHit:rgba(41,182,246,.42);
   }
   :root[data-theme="day"]{
     --bg:#DCE2E7; --panel:#FFFFFF; --panel2:#EDF1F4; --line:#B4BFC9;
@@ -27,6 +28,7 @@
     --card:#FFFFFF; --thead:#DCE5EB; --tline:#C3CED6;
     --onGreen:#FFFFFF; --onCyan:#FFFFFF; --chipOn:#06405E; --ghostActive:#E1E8ED;
     --warnBg2:#FFF2D2; --warnLine:#D6A036; --warnTxt:#5A4413;
+    --xLine:rgba(10,90,137,.15); --xHit:rgba(10,90,137,.30);
   }
   :root{
     --mono:ui-monospace,"SF Mono","SFMono-Regular",Menlo,Consolas,"Liberation Mono",monospace;
@@ -121,7 +123,6 @@
   .ph .tag small{display:block; color:var(--muted); font-weight:500; font-size:10.5px; letter-spacing:.04em}
   .ph .cond{font-size:11.5px; color:var(--muted); font-family:var(--mono)}
   .ph .epr{font-family:var(--mono); font-weight:700; font-size:30px; color:var(--green); text-align:right; line-height:1}
-  .ph .epr.range{font-size:22px}
   .ph .epr small{display:block; font-size:10px; color:var(--amber); font-weight:600; letter-spacing:.03em; margin-top:3px; text-align:right}
   .card-notes{padding:12px 15px; border-top:1px solid var(--line); font-size:11.5px; color:var(--muted)}
   .card-notes ul{margin:6px 0 0; padding-left:18px} .card-notes li{margin:3px 0}
@@ -156,6 +157,14 @@
   thead th{position:sticky; top:0; background:var(--thead); color:var(--cyan); z-index:1}
   tbody th{position:sticky; left:0; background:var(--thead); color:var(--amber); text-align:right}
   td{color:var(--muted)}
+  /* chart crosshair: tinted row + column reference lines, outlined intersection */
+  #rawTables td.xrow, #rawTables td.xcol{background:var(--xLine); color:var(--txt)}
+  #rawTables td.xhit{background:var(--xHit); outline:2px solid var(--cyan); outline-offset:-2px; color:var(--txt); font-weight:700}
+  #rawTables th.xrowh, #rawTables th.xcolh{background:var(--cyan)!important; color:var(--onCyan)}
+  .linkbtn{margin-top:12px; width:100%; background:transparent; border:1px dashed var(--line);
+    color:var(--cyan); font-family:var(--mono); font-size:12.5px; padding:11px 12px; border-radius:8px;
+    cursor:pointer; letter-spacing:.03em}
+  .linkbtn:active{background:var(--ghostActive)}
 
   .foot{margin-top:20px; text-align:center; color:var(--dim); font-size:11px; font-family:var(--mono); line-height:1.6}
   .foot a{color:var(--muted)}
@@ -175,7 +184,6 @@
     background:transparent; border:1px solid var(--line); border-radius:9px; min-height:42px; font-family:var(--sans)}
   .warmbtn.on{border-color:var(--amber); color:var(--amber)}
   #flightBtn.on{border-color:var(--green); color:var(--green)}
-  #awakeBtn.on{border-color:var(--green); color:var(--green)}
 
   /* ---- in-flight mode: setup hidden, card + manual lookup enlarged ---- */
   html[data-flight="1"] #buildPanel,
@@ -186,7 +194,6 @@
   html[data-flight="1"] .readout .big{ font-size:104px }
   html[data-flight="1"] .ph{ padding:18px }
   html[data-flight="1"] .ph .epr{ font-size:50px }
-  html[data-flight="1"] .ph .epr.range{ font-size:36px }
   html[data-flight="1"] .tab{ min-height:58px; font-size:17px }
   html[data-flight="1"] #mRow, html[data-flight="1"] #mCol{ min-height:60px; font-size:19px }
 
@@ -211,7 +218,7 @@
     .tab{padding:14px 6px; font-size:16px; min-height:52px}
     .readout .big{font-size:78px} .readout .calc{font-size:13.5px}
     .ph{grid-template-columns:104px 1fr auto; padding:16px 18px}
-    .ph .epr{font-size:40px} .ph .epr.range{font-size:30px}
+    .ph .epr{font-size:40px}
     .route{font-size:24px}
     table{font-size:13px} th,td{padding:6px 10px}
     .seg button{font-size:13px; min-height:46px} .warmbtn{min-height:46px}
@@ -253,8 +260,8 @@ document.documentElement.setAttribute('data-theme',t);}catch(e){}
 <div class="wrap">
 
   <div class="top">
-    <span class="badge">PW2037</span>
-    <div class="ttl">Manual EPR<small>TMC inop · thrust backup</small></div>
+    <span class="badge" id="engBadge">PW2037</span>
+    <div class="ttl">Manual Thrust<small>TMC inop · thrust backup</small></div>
     <div class="net"><span id="netDot" class="dot"></span><span id="netTxt">…</span></div>
     <div class="ctrls">
       <div class="seg" id="themeSeg">
@@ -263,7 +270,6 @@ document.documentElement.setAttribute('data-theme',t);}catch(e){}
         <button type="button" data-theme="auto">Auto</button>
       </div>
       <button type="button" class="warmbtn" id="flightBtn">IN-FLIGHT</button>
-      <button type="button" class="warmbtn" id="awakeBtn">AWAKE</button>
       <button type="button" class="warmbtn" id="warmBtn">WARM</button>
       <label class="dimwrap"><span class="dl">DIM</span><input type="range" id="dimRange" min="0" max="80" value="0" aria-label="Screen dim"></label>
     </div>
@@ -276,6 +282,8 @@ document.documentElement.setAttribute('data-theme',t);}catch(e){}
   <section id="buildPanel">
     <h2>Build flight card</h2>
     <p class="sub">Enter the pair and tap Pull weather — it fills OAT, altimeter and pressure altitude for both ends, then lives offline. Fields stay editable; type them from ATIS/FMC if you’re already off-grid.</p>
+
+    <div class="field" style="margin-bottom:12px"><label>Aircraft / engine</label><select id="engineSel"></select></div>
 
     <div class="grid g2">
       <div class="field"><label>Departure ICAO</label><input id="depIcao" inputmode="text" autocapitalize="characters" autocomplete="off" maxlength="4"></div>
@@ -363,12 +371,13 @@ document.documentElement.setAttribute('data-theme',t);}catch(e){}
     <div class="chips" id="mCorr" style="margin-top:12px"></div>
     <div class="readout">
       <div>
-        <div class="lbl"><span id="mPhaseName">Takeoff</span> target EPR</div>
+        <div class="lbl"><span id="mPhaseName">Takeoff</span> target <span id="mMetric">EPR</span></div>
         <div class="big" id="mEpr">—</div>
         <div class="calc" id="mCalc"></div>
       </div>
       <div class="badge" id="mCode" style="font-size:16px; padding:8px 12px">TO</div>
     </div>
+    <button class="linkbtn" id="mShow" type="button">↧ Show this box on the full chart</button>
     <div class="bracket">
       <div class="bh">Bracketing chart cells (cross-check)</div>
       <div class="bgrid" id="mBracket"></div>
@@ -387,11 +396,11 @@ document.documentElement.setAttribute('data-theme',t);}catch(e){}
 
   <div class="inop">
     <div class="mk">▲</div>
-    <p><b>Unofficial crew aid.</b> EPR values are transcribed from the PW2037 thrust-setting charts and are for cross-reference only. Always confirm against the aircraft <b>AFM / QRH / FOM</b> and limitations. Values snap to the nearest chart grid point — read conservatively between values.</p>
+    <p><b>Unofficial crew aid.</b> Values are transcribed from the thrust-setting charts and are for cross-reference only. Always confirm against the aircraft <b>AFM / QRH / FOM</b> and limitations. Values snap to the nearest chart grid point — read conservatively between values.</p>
   </div>
 
   <div class="foot">
-    PW2037 manual-EPR backup · <span id="ver"></span><br>
+    Manual thrust backup · <span id="ver"></span><br>
     Data transcribed from operator thrust-setting charts · verify against AFM/QRH.
   </div>
 
@@ -399,7 +408,7 @@ document.documentElement.setAttribute('data-theme',t);}catch(e){}
 
 <script>
 /* ====================== CACHE / SW ====================== */
-const CACHE_VERSION = "tmc-epr-v1.0.3";
+const CACHE_VERSION = "tmc-epr-v1.1.1";
 document.getElementById("ver").textContent = CACHE_VERSION;
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
@@ -408,7 +417,9 @@ if ("serviceWorker" in navigator) {
 }
 
 /* ====================== EPR DATA ====================== */
-const EPR = {
+const _ = null;
+const PROFILES = {
+"757-PW2037": { label:"757 · PW2037", metric:"EPR", phases:{
   takeoff:{ label:"Takeoff", code:"TO", rowName:"OAT °C", colName:"Press alt ft",
     cols:[-1000,0,1000,2000,3000,4000,5000,6000,7000,8000,9000,10000],
     rows:[55,54,52,50,48,46,44,42,40,38,36,34,32,30,28,26,24,22,20,18,16,14,12,10,5],
@@ -536,7 +547,282 @@ const EPR = {
       {id:"fast",label:"Speed over 160 KIAS",value:()=>-0.01}],
     note:"Ships certified for TO to 8,400 ft. Certified to 9,500 ft: 636, 638, 640–641, 6815–6817, 6901–6904.",
   },
+}},
+
+/* ===================== 757 · PW2040 (EPR) ===================== */
+"757-PW2040": { label:"757 · PW2040", metric:"EPR", phases:{
+  takeoff:{ label:"Takeoff", code:"TO", rowName:"OAT °C", colName:"Press alt ft",
+    cols:[0,1000,2000,3000,4000,5000,6000,8000,10000],
+    rows:[60,55,50,45,40,35,30,25,20,15,10], rowLabels:{10:"10 & below"},
+    data:[
+      [1.25,1.25,1.25,1.25,1.25,1.25,1.25,1.25,1.25],
+      [1.28,1.28,1.28,1.28,1.28,1.28,1.28,1.28,1.28],
+      [1.32,1.32,1.32,1.32,1.32,1.32,1.32,1.32,1.32],
+      [1.36,1.36,1.36,1.36,1.36,1.36,1.36,1.36,1.36],
+      [1.39,1.39,1.39,1.39,1.39,1.39,1.39,1.39,1.39],
+      [1.43,1.43,1.43,1.43,1.43,1.43,1.43,1.43,1.43],
+      [1.47,1.47,1.47,1.47,1.47,1.47,1.47,1.47,1.47],
+      [1.47,1.48,1.50,1.51,1.51,1.51,1.51,1.51,1.51],
+      [1.47,1.48,1.50,1.52,1.53,1.55,1.55,1.55,1.55],
+      [1.47,1.48,1.50,1.52,1.53,1.55,1.56,1.59,1.59],
+      [1.47,1.48,1.50,1.52,1.53,1.55,1.56,1.59,1.61]],
+    corrections:[
+      {id:"packsOff",label:"Packs OFF",value:()=>0.01},
+      {id:"wingAI",label:"Wing A/I ON",byCol:[-0.02,-0.02,-0.02,-0.02,-0.02,-0.02,-0.02,-0.02,-0.03]}],
+  },
+  climb:{ label:"Max Climb", code:"CLB", rowName:"TAT °C", colName:"Press alt ft",
+    cols:[0,5000,10000,15000,20000,25000,30000,35000,40000],
+    rows:[50,40,30,20,10,0,-10,-20], rowLabels:{},
+    data:[
+      [1.18,1.17,1.16,1.11,1.09,1.06,1.04,1.03,1.02],
+      [1.22,1.21,1.19,1.15,1.13,1.11,1.09,1.08,1.07],
+      [1.24,1.25,1.23,1.20,1.18,1.16,1.14,1.13,1.12],
+      [1.24,1.27,1.28,1.25,1.23,1.21,1.19,1.18,1.18],
+      [1.24,1.27,1.30,1.29,1.29,1.27,1.26,1.25,1.24],
+      [1.24,1.27,1.30,1.29,1.32,1.35,1.33,1.32,1.32],
+      [1.24,1.27,1.30,1.29,1.32,1.35,1.39,1.41,1.41],
+      [1.24,1.27,1.30,1.29,1.32,1.35,1.39,1.48,1.50]],
+    corrections:[
+      {id:"packsOff",label:"Packs OFF",byCol:[0.01,0.01,0.01,0.01,0.02,0.02,0.03,0.04,0.04]},
+      {id:"engAI",label:"Engine A/I ON",byCol:[0.00,0.00,-0.03,-0.03,-0.03,-0.04,-0.04,-0.05,-0.07]},
+      {id:"engWingAI",label:"Engine + Wing A/I ON",byCol:[-0.02,-0.02,-0.06,-0.06,-0.06,-0.07,-0.08,-0.10,-0.13]}],
+  },
+  cruise:{ label:"Max Cruise", code:"CRZ", rowName:"TAT °C", colName:"Press alt ft",
+    cols:[30000,31000,32000,33000,34000,35000,36000,37000,39000,41000],
+    rows:[15,10,5,0,-5,-10,-15,-20,-25,-30,-35,-40,-45,-50], rowLabels:{},
+    data:[
+      [1.15,1.14,1.14,1.14,1.14,1.14,1.14,_,_,_],
+      [1.18,1.17,1.17,1.17,1.17,1.17,1.17,1.17,_,_],
+      [1.21,1.21,1.21,1.20,1.20,1.20,1.20,1.20,1.19,_],
+      [1.24,1.24,1.24,1.24,1.24,1.24,1.24,1.23,1.23,1.23],
+      [1.28,1.28,1.28,1.28,1.28,1.28,1.28,1.27,1.27,1.27],
+      [1.29,1.31,1.32,1.32,1.32,1.32,1.32,1.32,1.31,1.31],
+      [1.29,1.31,1.32,1.34,1.36,1.36,1.37,1.37,1.37,1.36],
+      [1.29,1.31,1.32,1.34,1.36,1.36,1.41,1.41,1.41,1.40],
+      [1.29,1.31,1.32,1.34,1.36,1.36,1.41,1.41,1.41,1.40],
+      [1.29,1.31,1.32,1.34,1.36,1.36,1.41,1.41,1.41,1.40],
+      [1.29,1.31,1.32,1.34,1.36,1.36,1.41,1.41,1.41,1.40],
+      [1.29,1.31,1.32,1.34,1.36,1.36,1.41,1.41,1.41,1.40],
+      [1.29,1.31,1.32,1.34,1.36,1.36,1.41,1.41,1.41,1.40],
+      [1.29,1.31,1.32,1.34,1.36,1.36,1.41,1.41,1.41,1.40]],
+    corrections:[
+      {id:"engAI",label:"Engine A/I ON",value:pa=>pa>33000?-0.09:-0.05,note:"−0.05 ≤33,000 ft · −0.09 >33,000 ft"},
+      {id:"engWingAI",label:"Engine + Wing A/I ON",value:pa=>pa>33000?-0.16:-0.10,note:"−0.10 ≤33,000 ft · −0.16 >33,000 ft"}],
+  },
+  goaround:{ label:"Go-Around", code:"GA", rowName:"OAT °C", colName:"Press alt ft",
+    cols:[0,1000,2000,3000,4000,6000,8000,10000],
+    rows:[50,45,40,35,30,25,20,15,10], rowLabels:{},
+    data:[
+      [1.30,1.30,1.30,1.30,1.30,1.30,1.30,1.29],
+      [1.34,1.34,1.34,1.33,1.33,1.33,1.33,1.33],
+      [1.38,1.37,1.37,1.37,1.37,1.37,1.37,1.37],
+      [1.42,1.41,1.41,1.41,1.41,1.41,1.41,1.41],
+      [1.45,1.45,1.45,1.45,1.45,1.45,1.45,1.45],
+      [1.45,1.47,1.48,1.49,1.49,1.49,1.49,1.49],
+      [1.45,1.47,1.48,1.50,1.51,1.53,1.53,1.53],
+      [1.45,1.47,1.48,1.50,1.51,1.53,1.54,1.57],
+      [1.45,1.47,1.48,1.50,1.51,1.53,1.54,1.57]],
+    corrections:[
+      {id:"packsOff",label:"Packs OFF",value:()=>0.01},
+      {id:"engAI",label:"Engine A/I ON",byCol:[0.00,0.00,0.00,0.00,0.00,0.00,0.00,-0.03]},
+      {id:"engWingAI",label:"Engine + Wing A/I ON",byCol:[-0.02,-0.02,-0.02,-0.02,-0.02,-0.02,-0.02,-0.06]}],
+  },
+}},
+
+/* ===================== 767-300ER · PW4060 (EPR) ===================== */
+"767-PW4060": { label:"767-300ER · PW4060", metric:"EPR", phases:{
+  takeoff:{ label:"Takeoff", code:"TO", rowName:"OAT °C", colName:"Press alt ft",
+    cols:[-1000,0,2000,4000,6000,8000],
+    rows:[70,65,60,55,50,45,40,35,30,25,20,15,10], rowLabels:{10:"10 & below"},
+    data:[
+      [1.24,1.23,1.25,1.25,1.25,1.25],
+      [1.29,1.28,1.27,1.27,1.27,1.27],
+      [1.34,1.33,1.33,1.32,1.32,1.32],
+      [1.39,1.38,1.38,1.37,1.37,1.37],
+      [1.43,1.42,1.42,1.42,1.42,1.42],
+      [1.46,1.46,1.46,1.46,1.46,1.46],
+      [1.51,1.51,1.51,1.51,1.50,1.51],
+      [1.53,1.55,1.55,1.54,1.54,1.54],
+      [1.53,1.56,1.58,1.58,1.58,1.58],
+      [1.53,1.56,1.58,1.60,1.60,1.60],
+      [1.53,1.56,1.58,1.60,1.61,1.62],
+      [1.53,1.56,1.58,1.60,1.61,1.64],
+      [1.53,1.56,1.58,1.60,1.61,1.64]],
+    corrections:[
+      {id:"packsOff",label:"Packs OFF",value:pa=>pa>=4501?0.02:0.01,note:"+0.01 ≤4,500 ft · +0.02 ≥4,501 ft"}],
+  },
+  climb:{ label:"Max Climb", code:"CLB", rowName:"TAT °C", colName:"Press alt ft",
+    cols:[0,5000,10000,15000,20000,25000,30000,35000,40000],
+    rows:[60,50,40,30,20,10,0,-10,-20], rowLabels:{"-20":"-20 & below"},
+    data:[
+      [1.24,1.25,1.25,1.21,1.20,1.18,1.14,1.08,1.05],
+      [1.28,1.29,1.29,1.26,1.24,1.23,1.21,1.15,1.11],
+      [1.32,1.34,1.34,1.31,1.30,1.29,1.27,1.21,1.18],
+      [1.33,1.40,1.40,1.38,1.37,1.36,1.35,1.29,1.25],
+      [1.33,1.40,1.46,1.46,1.45,1.44,1.43,1.37,1.34],
+      [1.33,1.40,1.46,1.47,1.53,1.53,1.53,1.47,1.44],
+      [1.33,1.40,1.46,1.47,1.53,1.57,1.63,1.57,1.54],
+      [1.33,1.40,1.46,1.47,1.53,1.57,1.64,1.67,1.63],
+      [1.33,1.40,1.46,1.47,1.53,1.57,1.64,1.68,1.66]],
+    corrections:[
+      {id:"packsOff",label:"Packs OFF",byCol:[0.01,0.01,0.01,0.01,0.01,0.01,0.02,0.02,0.03]},
+      {id:"engAI",label:"Engine A/I ON",byCol:[-0.01,-0.02,-0.02,-0.03,-0.03,-0.03,-0.04,-0.04,-0.05]},
+      {id:"engWingAI",label:"Engine + Wing A/I ON",byCol:[-0.02,-0.03,-0.04,-0.05,-0.05,-0.05,-0.07,-0.07,-0.08]}],
+  },
+  cruise:{ label:"Max Cruise", code:"CRZ", rowName:"TAT °C", colName:"Press alt ft",
+    cols:[10000,15000,20000,25000,30000,35000,37000,39000,41000,43000],
+    rows:[45,40,35,30,25,20,15,10,5,0,-5,-10,-15,-20,-25,-30,-35,-40,-45,-50,-55,-60], rowLabels:{},
+    data:[
+      [1.20,1.17,1.13,1.12,1.07,1.05,1.01,1.01,1.01,1.00],
+      [1.23,1.21,1.17,1.17,1.12,1.10,1.06,1.06,1.06,1.05],
+      [1.27,1.25,1.22,1.21,1.18,1.15,1.11,1.11,1.11,1.10],
+      [1.29,1.29,1.26,1.26,1.23,1.20,1.16,1.16,1.16,1.15],
+      [1.29,1.32,1.31,1.30,1.29,1.25,1.21,1.21,1.21,1.20],
+      [1.29,1.32,1.35,1.35,1.34,1.30,1.26,1.26,1.26,1.25],
+      [1.29,1.32,1.36,1.39,1.40,1.35,1.31,1.31,1.31,1.30],
+      [1.29,1.32,1.36,1.43,1.45,1.40,1.36,1.36,1.36,1.35],
+      [1.29,1.32,1.36,1.43,1.51,1.45,1.41,1.41,1.41,1.40],
+      [1.29,1.32,1.36,1.43,1.53,1.50,1.46,1.46,1.46,1.45],
+      [1.29,1.32,1.36,1.43,1.53,1.55,1.51,1.51,1.51,1.50],
+      [1.29,1.32,1.36,1.43,1.53,1.58,1.56,1.56,1.56,1.55],
+      [1.29,1.32,1.36,1.43,1.53,1.58,1.57,1.57,1.57,1.56],
+      [1.29,1.32,1.36,1.43,1.53,1.58,1.57,1.57,1.57,1.56],
+      [1.29,1.32,1.36,1.43,1.53,1.58,1.57,1.57,1.57,1.56],
+      [1.29,1.32,1.36,1.43,1.53,1.58,1.57,1.57,1.57,1.56],
+      [1.29,1.32,1.36,1.43,1.53,1.58,1.57,1.57,1.57,1.56],
+      [1.29,1.32,1.36,1.43,1.53,1.58,1.57,1.57,1.57,1.56],
+      [1.29,1.32,1.36,1.43,1.53,1.58,1.57,1.57,1.57,1.56],
+      [1.29,1.32,1.36,1.43,1.53,1.58,1.57,1.57,1.57,1.56],
+      [1.29,1.32,1.36,1.43,1.53,1.58,1.57,1.57,1.57,1.56],
+      [1.29,1.32,1.36,1.43,1.53,1.58,1.57,1.57,1.57,1.56]],
+    corrections:[
+      {id:"engAI",label:"Engine A/I ON",byCol:[-0.01,-0.02,-0.02,-0.02,-0.02,-0.02,-0.02,-0.02,-0.02,-0.02]},
+      {id:"engWingAI",label:"Engine + Wing A/I ON",byCol:[-0.03,-0.05,-0.05,-0.05,-0.05,-0.06,-0.06,-0.07,-0.07,-0.07]}],
+  },
+  goaround:{ label:"Go-Around", code:"GA", rowName:"OAT °C", colName:"Press alt ft",
+    cols:[-1000,0,2000,4000,6000,8000],
+    rows:[55,50,45,40,35,30,25,20,15,10], rowLabels:{10:"10 & below"},
+    data:[
+      [1.38,1.38,1.37,1.37,1.36,1.37],
+      [1.42,1.42,1.42,1.42,1.41,1.42],
+      [1.46,1.46,1.47,1.46,1.46,1.46],
+      [1.51,1.51,1.51,1.51,1.51,1.51],
+      [1.54,1.56,1.55,1.55,1.55,1.55],
+      [1.54,1.57,1.59,1.59,1.59,1.59],
+      [1.54,1.57,1.60,1.62,1.61,1.62],
+      [1.54,1.57,1.60,1.62,1.63,1.64],
+      [1.54,1.57,1.60,1.62,1.63,1.66],
+      [1.54,1.57,1.60,1.62,1.63,1.66]],
+    corrections:[
+      {id:"packsOff",label:"Packs OFF",value:pa=>pa>=4501?0.02:0.01,note:"+0.01 ≤4,500 ft · +0.02 ≥4,501 ft"},
+      {id:"engWingAI",label:"Engine + Wing A/I ON",value:pa=>pa>=4501?-0.02:-0.01,note:"−0.01 ≤4,500 ft · −0.02 ≥4,501 ft"}],
+  },
+}},
+
+/* ===================== 767-300ER · CF6-80C2B6F (%N1) ===================== */
+"767-CF6": { label:"767-300ER · CF6-80C2B6F", metric:"%N1", phases:{
+  takeoff:{ label:"Takeoff", code:"TO", rowName:"OAT °C", colName:"Press alt ft",
+    cols:[-1000,0,2000,4000,6000,8000,9000],
+    rows:[55,50,45,40,35,30,25,20,15,10,0,-10,-20,-30,-40,-50], rowLabels:{},
+    data:[
+      [106.1,106.1,105.9,105.5,105.1,104.9,104.7],
+      [106.8,106.9,106.8,106.5,106.1,105.9,105.7],
+      [107.5,107.5,107.5,107.3,107.0,106.9,106.6],
+      [108.2,108.2,108.2,108.0,107.9,107.8,107.7],
+      [109.0,108.9,109.0,108.8,108.7,108.7,108.6],
+      [109.1,109.8,109.8,109.7,109.6,109.7,109.6],
+      [108.2,108.9,110.3,110.6,110.5,110.6,110.6],
+      [107.3,108.0,109.4,110.6,111.3,111.4,111.3],
+      [106.4,107.1,108.5,109.7,111.0,112.0,112.1],
+      [105.5,106.2,107.5,108.8,110.0,111.3,112.1],
+      [103.6,104.3,105.7,106.9,108.1,109.4,110.1],
+      [101.7,102.4,103.8,104.9,106.1,107.4,108.1],
+      [99.8,100.4,101.8,103.0,104.2,105.4,106.1],
+      [97.9,98.5,99.8,101.0,102.2,103.4,104.0],
+      [95.9,96.4,97.8,99.0,100.1,101.3,102.0],
+      [93.8,94.4,95.8,96.9,98.0,99.2,99.8]],
+    corrections:[
+      {id:"packsOff",label:"Packs OFF",byCol:[0.3,0.3,0.3,0.4,0.5,0.5,0.5]}],
+  },
+  climb:{ label:"Max Climb", code:"CLB", rowName:"TAT °C", colName:"Press alt ft",
+    cols:[0,5000,10000,15000,20000,25000,30000,35000,40000],
+    rows:[60,50,40,30,20,10,0,-10,-20,-30,-40,-50], rowLabels:{},
+    data:[
+      [96.5,97.2,97.0,97.4,96.7,95.1,96.1,95.1,94.7],
+      [97.6,98.7,99.0,99.6,98.9,97.3,98.2,95.0,93.8],
+      [98.8,99.8,100.4,101.2,101.0,99.3,100.1,97.0,95.8],
+      [99.1,101.1,101.6,102.4,102.5,101.2,101.9,98.8,97.7],
+      [97.5,101.3,103.3,103.8,104.1,102.8,103.4,100.5,99.4],
+      [95.8,99.6,102.9,104.4,105.6,104.6,104.7,102.6,100.9],
+      [94.2,97.8,101.1,102.6,105.0,106.9,106.5,104.3,102.4],
+      [92.5,96.1,99.4,100.8,103.0,105.3,107.1,106.3,104.3],
+      [90.8,94.3,97.6,99.0,101.5,103.4,105.1,106.5,106.4],
+      [89.1,92.4,95.7,97.1,99.7,101.5,103.2,104.4,104.4],
+      [87.3,90.5,93.9,95.2,97.8,99.5,101.2,102.2,102.2],
+      [85.5,88.6,91.9,93.3,95.8,97.5,99.1,100.1,100.1]],
+    corrections:[
+      {id:"packsOff",label:"Packs OFF",byCol:[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0]},
+      {id:"engAI",label:"Engine A/I ON",byCol:[-0.6,-0.6,-0.6,-0.6,-0.8,-0.9,-1.1,-1.4,-1.9]},
+      {id:"engWingAI",label:"Engine + Wing A/I ON",byCol:[-0.9,-0.9,-1.0,-1.1,-1.3,-1.4,-1.7,-2.2,-2.4]}],
+  },
+  cruise:{ label:"Max Cruise", code:"CRZ", rowName:"TAT °C", colName:"Press alt ft",
+    cols:[10000,15000,20000,25000,30000,35000,37000,39000,41000,43000],
+    rows:[45,40,35,30,25,20,15,10,5,0,-5,-10,-15,-20,-25,-30,-35,-40,-45,-50,-55,-60], rowLabels:{},
+    data:[
+      [96.1,_,_,_,_,_,_,_,_,_],
+      [96.9,_,_,_,_,_,_,_,_,_],
+      [97.6,97.5,_,_,_,_,_,_,_,_],
+      [98.2,98.3,_,_,_,_,_,_,_,_],
+      [98.8,99.0,100.3,98.2,_,_,_,_,_,_],
+      [98.1,99.7,101.0,99.3,_,_,_,_,_,_],
+      [97.3,99.5,101.6,100.3,101.0,_,_,_,_,_],
+      [96.4,98.6,100.9,101.3,101.6,_,_,_,_,_],
+      [95.6,97.7,100.0,102.2,102.3,99.8,98.8,98.7,98.6,98.6],
+      [94.7,96.8,99.1,102.0,103.1,100.7,99.6,99.5,99.5,99.4],
+      [93.8,95.9,98.1,101.1,103.5,101.5,100.5,100.4,100.3,100.3],
+      [93.0,95.0,97.2,100.1,102.5,102.5,101.4,101.3,101.3,101.2],
+      [92.1,94.1,96.3,99.2,101.5,103.4,102.4,102.3,102.3,102.3],
+      [91.2,93.2,95.4,98.2,100.5,102.4,102.4,102.4,102.3,102.3],
+      [_,92.3,94.4,97.2,99.5,101.3,101.4,101.4,101.3,101.3],
+      [_,91.4,93.5,96.2,98.5,100.3,100.3,100.3,100.3,100.3],
+      [_,_,92.5,95.2,97.5,99.3,99.3,99.3,99.3,99.2],
+      [_,_,91.5,94.2,96.5,98.2,98.3,98.2,98.2,98.2],
+      [_,_,_,_,95.5,97.2,97.2,97.2,97.2,97.1],
+      [_,_,_,_,94.4,96.1,96.1,96.1,96.1,96.1],
+      [_,_,_,_,_,95.0,95.0,95.0,95.0,95.0],
+      [_,_,_,_,_,93.9,93.9,93.9,93.9,93.9]],
+    corrections:[
+      {id:"engAI",label:"Engine A/I ON",byCol:[-0.6,-0.6,-0.9,-0.9,-1.1,-1.5,-1.5,-2.2,-2.2,-2.2]},
+      {id:"engWingAI",label:"Engine + Wing A/I ON",byCol:[-1.1,-1.1,-1.4,-1.4,-1.7,-2.3,-2.3,-3.4,-3.4,-3.4]}],
+  },
+  goaround:{ label:"Go-Around", code:"GA", rowName:"OAT °C", colName:"Press alt ft",
+    cols:[-1000,0,2000,4000,6000,8000,9000],
+    rows:[55,50,45,40,35,30,25,20,15,10,0,-10,-20,-30,-40,-50], rowLabels:{},
+    data:[
+      [106.1,106.1,105.9,105.5,105.1,104.9,104.7],
+      [106.8,106.9,106.8,106.5,106.1,105.9,105.7],
+      [107.5,107.5,107.5,107.3,107.0,106.9,106.6],
+      [108.2,108.2,108.2,108.0,107.9,107.8,107.7],
+      [109.0,108.9,109.0,108.8,108.7,108.7,108.6],
+      [109.1,109.8,109.8,109.7,109.6,109.7,109.6],
+      [108.2,108.9,110.3,110.6,110.5,110.6,110.6],
+      [107.3,108.0,109.4,110.6,111.3,111.4,111.3],
+      [106.4,107.1,108.5,109.7,111.0,112.0,112.1],
+      [105.5,106.2,107.5,108.8,110.0,111.3,112.1],
+      [103.6,104.3,105.7,106.9,108.1,109.4,110.1],
+      [101.7,102.4,103.8,104.9,106.1,107.4,108.1],
+      [99.8,100.4,101.8,103.0,104.2,105.4,106.1],
+      [97.9,98.5,99.8,101.0,102.2,103.4,104.0],
+      [95.9,96.4,97.8,99.0,100.1,101.3,102.0],
+      [93.8,94.4,95.8,96.9,98.0,99.2,99.8]],
+    corrections:[
+      {id:"packsOff",label:"Packs OFF",byCol:[0.3,0.3,0.3,0.4,0.5,0.5,0.5]}],
+  },
+}},
 };
+let ACTIVE_PROFILE="757-PW2037";
+let EPR = PROFILES[ACTIVE_PROFILE].phases;
+let METRIC = PROFILES[ACTIVE_PROFILE].metric;
 const PHASE_ORDER = ["takeoff","climb","cruise","goaround"];
 
 function nearestIdx(a,v){let b=0,bd=Infinity;for(let i=0;i<a.length;i++){const d=Math.abs(a[i]-v);if(d<bd){bd=d;b=i;}}return b;}
@@ -544,18 +830,20 @@ function rowIdxFor(t,x){const r=t.rows;if(x>=r[0])return 0;if(x<=r[r.length-1])r
 function colIdxFor(t,x){const c=t.cols;if(x<=c[0])return 0;if(x>=c[c.length-1])return c.length-1;return nearestIdx(c,x);}
 function rowLabel(t,i){const v=t.rows[i];return (t.rowLabels&&t.rowLabels[v]!=null)?t.rowLabels[v]:String(v);}
 function r2(n){return Math.round(n*100)/100;}
-function fmt(n){return n.toFixed(2);}
+function fmt(n){ if(n==null||Number.isNaN(n)) return "—"; return METRIC==="%N1"? Number(n).toFixed(1):Number(n).toFixed(2); }
+function fmtCorr(v){ return (METRIC==="%N1"? Math.abs(v).toFixed(1):Math.abs(v).toFixed(2)); }
 
 function lookupEPR(key,temp,pa,corrIds){
   const t=EPR[key], ri=rowIdxFor(t,temp), ci=colIdxFor(t,pa), base=t.data[ri][ci];
   let total=0; const applied=[];
-  (t.corrections||[]).forEach(c=>{ if(corrIds&&corrIds.includes(c.id)){
+  if(base!=null) (t.corrections||[]).forEach(c=>{ if(corrIds&&corrIds.includes(c.id)){
     const v=c.byCol?c.byCol[ci]:c.value(pa); total+=v; applied.push({label:c.label,value:v}); }});
   const neigh=[]; for(const dr of[0,1])for(const dc of[0,1]){
     const r=Math.min(ri+dr,t.rows.length-1),cc=Math.min(ci+dc,t.cols.length-1);
     neigh.push({row:rowLabel(t,r),col:t.cols[cc],epr:t.data[r][cc],hit:(r===ri&&cc===ci)});}
   return {phase:t.label,code:t.code,usedRowLabel:rowLabel(t,ri),usedCol:t.cols[ci],
-    rowName:t.rowName,colName:t.colName,base,applied,correctionTotal:r2(total),final:r2(base+total),neigh,ri,ci};
+    rowName:t.rowName,colName:t.colName,base,applied,correctionTotal:r2(total),
+    final: base==null? null : r2(base+total), na: base==null, neigh,ri,ci};
 }
 
 /* ====================== ATMOS HELPERS ====================== */
@@ -591,6 +879,7 @@ function saveState(extra){
     depIcao:els.depIcao.value,arrIcao:els.arrIcao.value,depOat:els.depOat.value,depPa:els.depPa.value,
     arrOat:els.arrOat.value,arrPa:els.arrPa.value,cruiseFl:els.cruiseFl.value,
     packsOff:els.packsOff.checked,engAI:els.engAI.checked,wingAI:els.wingAI.checked,proxy:els.proxy.value,
+    profile:ACTIVE_PROFILE,
   }, extra||{});
   try{localStorage.setItem(SKEY,JSON.stringify(s));}catch(e){}
 }
@@ -650,14 +939,13 @@ const wxCache={dep:null,arr:null};
 /* ====================== CARD BUILD ====================== */
 function activeCardCorr(phaseKey){
   const t=EPR[phaseKey], ids=[]; const want={packsOff:els.packsOff.checked,engAI:els.engAI.checked,wingAI:els.wingAI.checked};
-  const has=id=>t.corrections.some(c=>c.id===id);
+  const has=id=>t.corrections&&t.corrections.some(c=>c.id===id);
   if(want.packsOff&&has("packsOff")) ids.push("packsOff");
-  if(phaseKey==="cruise"){
-    if(want.engAI&&want.wingAI) ids.push("engWingAI");
-    else if(want.engAI) ids.push("engAI");
-  }else{
+  if(want.engAI&&want.wingAI&&has("engWingAI")) ids.push("engWingAI");
+  else{
     if(want.engAI&&has("engAI")) ids.push("engAI");
     if(want.wingAI&&has("wingAI")) ids.push("wingAI");
+    if(want.wingAI&&!want.engAI&&!has("wingAI")&&has("engWingAI")) ids.push("engWingAI");
   }
   return ids;
 }
@@ -685,8 +973,10 @@ function buildCard(){
   const crzLo=lookupEPR("cruise",crzTat-10,crzAlt,activeCardCorr("cruise"));
   const crzHi=lookupEPR("cruise",crzTat+10,crzAlt,activeCardCorr("cruise"));
   const crz=lookupEPR("cruise",crzTat,crzAlt,activeCardCorr("cruise"));
-  const crzRange = crzLo.final===crzHi.final ? fmt(crz.final)
-    : fmt(Math.min(crzLo.final,crzHi.final,crz.final))+"–"+fmt(Math.max(crzLo.final,crzHi.final,crz.final));
+  const crzFinals=[crzLo.final,crz.final,crzHi.final].filter(v=>v!=null);
+  const crzRange = crzFinals.length===0 ? "—"
+    : (Math.min(...crzFinals)===Math.max(...crzFinals) ? fmt(crz.final!=null?crz.final:crzFinals[0])
+       : fmt(Math.min(...crzFinals))+"–"+fmt(Math.max(...crzFinals)));
 
   const cfg=[]; if(els.packsOff.checked)cfg.push("Packs OFF"); if(els.engAI.checked)cfg.push("Eng A/I ON"); if(els.wingAI.checked)cfg.push("Wing A/I ON");
   const cfgTxt=cfg.length?cfg.join(" · "):"Normal bleed · A/I off";
@@ -706,7 +996,7 @@ function buildCard(){
   els.cardBody.innerHTML = `
    <div class="card-h">
      <div class="route">${depIcao}<span class="arr">→</span>${arrIcao}</div>
-     <div class="meta">PW2037 · FL${fl!=null?String(fl).padStart(3,"0"):"—"} · ${esc(cfgTxt)}</div>
+     <div class="meta">${esc(PROFILES[ACTIVE_PROFILE].label)} · FL${fl!=null?String(fl).padStart(3,"0"):"—"} · ${esc(cfgTxt)}</div>
      <div class="stamp">${stamp}</div>
    </div>
    <div class="wx">${wxCell(depIcao,depOat,depPa,wxCache.dep)}${wxCell(arrIcao,arrOat,arrPa,wxCache.arr)}</div>
@@ -728,8 +1018,13 @@ function buildCard(){
   els.cardOut.style.display="block";
   els.savedNote.textContent="✓ saved · available offline";
   saveState({cardBuilt:true, stamp});
+  // mark the pulled box on each phase chart
+  highlightChart("takeoff", to.ri, to.ci, true);
+  highlightChart("climb", clb.ri, clb.ci, true);
+  highlightChart("cruise", crz.ri, crz.ci, true);
+  highlightChart("goaround", ga.ri, ga.ci, true);
   els.cardOut.scrollIntoView({behavior:"smooth",block:"start"});
-  setStatus("Card built and saved to this device.","ok");
+  setStatus("Card built · pulled boxes marked on the full charts.","ok");
 }
 function esc(s){return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));}
 
@@ -754,6 +1049,26 @@ $("helpToArr").addEventListener("click",()=>{const p=helpPA();if(p!=null)els.arr
 /* ====================== MANUAL LOOKUP ====================== */
 let mPhase="takeoff";
 const mCorrState={};
+/* ====================== ENGINE PROFILE ====================== */
+function populateEngines(){
+  const sel=$("engineSel"); if(!sel) return; sel.innerHTML="";
+  Object.keys(PROFILES).forEach(id=>{ const o=document.createElement("option"); o.value=id; o.textContent=PROFILES[id].label; sel.appendChild(o); });
+  sel.value=ACTIVE_PROFILE; sel.onchange=()=>switchProfile(sel.value);
+}
+function applyProfileLabels(){
+  METRIC=PROFILES[ACTIVE_PROFILE].metric;
+  const eng=PROFILES[ACTIVE_PROFILE].label.split("·").pop().trim();
+  const b=$("engBadge"); if(b) b.textContent=eng;
+  const mm=$("mMetric"); if(mm) mm.textContent=METRIC;
+  document.title="Manual Thrust · "+eng;
+}
+function switchProfile(id){
+  if(!PROFILES[id]) return;
+  ACTIVE_PROFILE=id; EPR=PROFILES[id].phases; METRIC=PROFILES[id].metric;
+  mPhase="takeoff"; Object.keys(mCorrState).forEach(k=>delete mCorrState[k]);
+  const rs=$("mRow"), cs=$("mCol"); if(rs)rs.dataset.phase=""; if(cs)cs.dataset.phase="";
+  applyProfileLabels(); buildRaw(); buildTabs(); buildManual(); saveState();
+}
 function buildTabs(){
   const c=$("tabs");c.innerHTML="";
   PHASE_ORDER.forEach(k=>{
@@ -795,14 +1110,19 @@ function calcManual(){
   const temp=t.rows[ri], pa=t.cols[ci];
   const r=lookupEPR(mPhase,temp,pa,corrIds);
   $("mEpr").textContent=fmt(r.final);
-  let calc=`base ${fmt(r.base)}`;
-  r.applied.forEach(a=>{ const v=a.value; calc+=`  <b>${v>=0?"+":"−"}${Math.abs(v).toFixed(2)}</b>`; });
-  if(r.applied.length) calc+=`  =  <span class="neu">${fmt(r.final)}</span>`;
-  $("mCalc").innerHTML=calc + (mPhase==="takeoff"||mPhase==="climb"||mPhase==="cruise"?"":"");
+  let calc;
+  if(r.na){ calc=`<b style="color:var(--amber)">N/A</b> — not published at this point; pick a nearer grid value.`; }
+  else{
+    calc=`base ${fmt(r.base)}`;
+    r.applied.forEach(a=>{ const v=a.value; calc+=`  <b>${v>=0?"+":"−"}${fmtCorr(v)}</b>`; });
+    if(r.applied.length) calc+=`  =  <span class="neu">${fmt(r.final)}</span>`;
+  }
+  $("mCalc").innerHTML=calc;
   // bracket
   const bg=$("mBracket"); bg.innerHTML="";
   r.neigh.forEach(n=>{const d=document.createElement("div");d.className="bcell"+(n.hit?" hit":"");
     d.innerHTML=`<span>${n.row} / ${n.col.toLocaleString()}</span><b>${fmt(n.epr)}</b>`; bg.appendChild(d);});
+  highlightChart(mPhase, ri, ci, true);
 }
 
 /* ====================== RAW TABLES ====================== */
@@ -810,19 +1130,40 @@ function buildRaw(){
   const host=$("rawTables"); host.innerHTML="";
   PHASE_ORDER.forEach((k,idx)=>{
     const t=EPR[k];
-    const det=document.createElement("details");det.className="raw"; if(idx===0)det.open=true;
-    let h=`<summary>${t.code} — ${t.label} <small>· ${t.rowName} × ${t.colName}</small></summary><div class="tscroll"><table><thead><tr><th>${t.rowName.replace(" °C","")}</th>`;
-    t.cols.forEach(c=>h+=`<th>${c.toLocaleString()}</th>`); h+="</tr></thead><tbody>";
-    t.data.forEach((row,ri)=>{ h+=`<tr><th>${rowLabel(t,ri)}</th>`; row.forEach(v=>h+=`<td>${fmt(v)}</td>`); h+="</tr>"; });
+    const det=document.createElement("details");det.className="raw"; det.id="det-"+k; if(idx===0)det.open=true;
+    let h=`<summary>${t.code} — ${t.label} <small>· ${t.rowName} × ${t.colName}</small></summary><div class="tscroll"><table id="raw-${k}" data-phase="${k}"><thead><tr><th>${t.rowName.replace(" °C","")}</th>`;
+    t.cols.forEach((c,ci)=>h+=`<th class="colh" data-c="${ci}">${c.toLocaleString()}</th>`); h+="</tr></thead><tbody>";
+    t.data.forEach((row,ri)=>{ h+=`<tr><th class="rowh" data-r="${ri}">${rowLabel(t,ri)}</th>`; row.forEach((v,ci)=>h+=`<td data-r="${ri}" data-c="${ci}">${fmt(v)}</td>`); h+="</tr>"; });
     h+="</tbody></table></div>";
     if(t.note) h+=`<div class="hint" style="padding:0 14px 12px">${esc(t.note)}</div>`;
     det.innerHTML=h; host.appendChild(det);
   });
 }
+/* highlight the pulled cell + tint its row/column as X/Y reference lines */
+function highlightChart(key, ri, ci, open){
+  const tbl=document.getElementById("raw-"+key); if(!tbl) return;
+  tbl.querySelectorAll(".xrow,.xcol,.xhit,.xrowh,.xcolh").forEach(el=>el.classList.remove("xrow","xcol","xhit","xrowh","xcolh"));
+  if(ri==null||ci==null) return;
+  tbl.querySelectorAll('td[data-r="'+ri+'"]').forEach(td=>td.classList.add("xrow"));
+  tbl.querySelectorAll('td[data-c="'+ci+'"]').forEach(td=>td.classList.add("xcol"));
+  const hit=tbl.querySelector('td[data-r="'+ri+'"][data-c="'+ci+'"]'); if(hit) hit.classList.add("xhit");
+  const rh=tbl.querySelector('th.rowh[data-r="'+ri+'"]'); if(rh) rh.classList.add("xrowh");
+  const ch=tbl.querySelector('th.colh[data-c="'+ci+'"]'); if(ch) ch.classList.add("xcolh");
+  if(open){ const det=document.getElementById("det-"+key); if(det) det.open=true; }
+}
+/* scroll the page to a phase chart and center its highlighted cell horizontally */
+function jumpToChart(key){
+  const det=document.getElementById("det-"+key); if(det) det.open=true;
+  const tbl=document.getElementById("raw-"+key); if(!tbl) return;
+  tbl.scrollIntoView({behavior:"smooth",block:"center"});
+  setTimeout(()=>{ const sc=tbl.closest(".tscroll"), hit=tbl.querySelector("td.xhit");
+    if(sc&&hit){ const cr=sc.getBoundingClientRect(), hr=hit.getBoundingClientRect();
+      sc.scrollTo({left: sc.scrollLeft + (hr.left-cr.left) - sc.clientWidth/2 + hr.width/2, behavior:"smooth"}); } }, 380);
+}
 
 /* ====================== DISPLAY: theme / dim / orientation ====================== */
 const PKEY="tmcEprPrefs";
-let prefs=Object.assign({theme:"auto",dim:0,warm:false,awake:false,flight:false},(()=>{try{return JSON.parse(localStorage.getItem(PKEY)||"{}")}catch(e){return{}}})());
+let prefs=Object.assign({theme:"auto",dim:0,warm:false,flight:false},(()=>{try{return JSON.parse(localStorage.getItem(PKEY)||"{}")}catch(e){return{}}})());
 function savePrefs(){try{localStorage.setItem(PKEY,JSON.stringify(prefs));}catch(e){}}
 const lightMQ = window.matchMedia ? window.matchMedia("(prefers-color-scheme: light)") : null;
 function effTheme(){ return prefs.theme==="auto" ? (lightMQ && lightMQ.matches ? "day":"night") : prefs.theme; }
@@ -849,15 +1190,11 @@ function applyFlight(){
 }
 $("flightBtn").addEventListener("click",()=>{ prefs.flight=!prefs.flight; applyFlight(); savePrefs(); if(prefs.flight) window.scrollTo(0,0); });
 
-/* keep screen awake (iOS Wake Lock); iOS drops the lock on background, so re-acquire on return */
+/* keep the screen awake whenever the app is open; iOS drops the lock on background → re-acquire */
 let wakeLock=null; const wakeSupported=("wakeLock" in navigator);
-async function acquireWake(){ if(!wakeSupported) return; try{ wakeLock=await navigator.wakeLock.request("screen"); wakeLock.addEventListener("release",()=>{ wakeLock=null; }); }catch(e){ wakeLock=null; } }
-function releaseWake(){ try{ if(wakeLock) wakeLock.release(); }catch(e){} wakeLock=null; }
-function applyAwakeBtn(){ const b=$("awakeBtn"); b.classList.toggle("on",!!prefs.awake);
-  b.textContent=(prefs.awake && !wakeSupported)?"AWAKE*":"AWAKE";
-  b.title=wakeSupported?"Keep screen awake":"Keep-awake not supported by this browser"; }
-$("awakeBtn").addEventListener("click", async ()=>{ prefs.awake=!prefs.awake; savePrefs(); if(prefs.awake) await acquireWake(); else releaseWake(); applyAwakeBtn(); });
-document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==="visible" && prefs.awake && !wakeLock) acquireWake(); });
+async function acquireWake(){ if(!wakeSupported||wakeLock) return; try{ wakeLock=await navigator.wakeLock.request("screen"); wakeLock.addEventListener("release",()=>{ wakeLock=null; }); }catch(e){ wakeLock=null; } }
+document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==="visible") acquireWake(); });
+window.addEventListener("pointerdown",acquireWake);
 
 function orient(){ document.documentElement.setAttribute("data-orient", (window.innerWidth>=window.innerHeight)?"landscape":"portrait"); }
 window.addEventListener("resize",orient);
@@ -880,9 +1217,12 @@ function restore(){
   if(s.cardBuilt){ buildCard(); setStatus("Restored saved card.","ok"); }
 }
 [ "depIcao","arrIcao","depOat","depPa","arrOat","arrPa","cruiseFl","proxy"].forEach(k=>els[k].addEventListener("input",()=>saveState()));
-applyTheme(); applyDim(); applyFlight(); applyAwakeBtn(); orient();
-if(prefs.awake) acquireWake();
-buildTabs(); buildManual(); buildRaw(); netUpdate(); restore();
+applyTheme(); applyDim(); applyFlight(); orient();
+acquireWake();
+$("mShow").addEventListener("click",()=>jumpToChart(mPhase));
+(function(){ const s=loadState(); if(s.profile&&PROFILES[s.profile]){ ACTIVE_PROFILE=s.profile; EPR=PROFILES[s.profile].phases; METRIC=PROFILES[s.profile].metric; } })();
+populateEngines(); applyProfileLabels();
+buildRaw(); buildTabs(); buildManual(); netUpdate(); restore();
 </script>
 </body>
 </html>

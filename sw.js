@@ -4,7 +4,7 @@
    are passed straight to the network and never cached, so a failed or absent
    weather pull can never break the offline app. */
 
-const CACHE = "tmc-epr-v1.0.3";
+const CACHE = "tmc-epr-v1.1.1";
 
 const SHELL = [
   "./",

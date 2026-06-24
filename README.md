@@ -17,8 +17,8 @@ preserve night vision. The layout adapts to portrait or landscape and is sized f
 glove and turbulence use on an iPad.
 
 In-flight mode hides the setup and enlarges the reference card and manual lookup
-for at-a-glance use. A keep-awake toggle uses the iPad screen wake lock to stop the
-display sleeping in flight, and re-engages automatically when you return to the app.
+for at-a-glance use. The screen is kept awake automatically while the app is open (re-engaging when you
+return to it) so the display does not sleep in flight.
 
 > Unofficial crew aid. EPR values are transcribed from the PW2037 thrust-setting
 > charts and are for cross-reference only. Always confirm against the aircraft

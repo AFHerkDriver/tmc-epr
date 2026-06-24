@@ -1,7 +1,7 @@
 {
-  "name": "Manual EPR — PW2037",
-  "short_name": "EPR 2037",
-  "description": "Offline manual-EPR thrust reference and flight card for the PW2037 (TMC backup).",
+  "name": "Manual Thrust",
+  "short_name": "Thrust",
+  "description": "Offline manual thrust reference (EPR / %N1) and flight card — TMC backup for 757 and 767.",
   "id": "./",
   "start_url": "./",
   "scope": "./",
