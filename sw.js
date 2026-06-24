@@ -4,17 +4,17 @@
    are passed straight to the network and never cached, so a failed or absent
    weather pull can never break the offline app. */
 
-const CACHE = "tmc-epr-v1.0.1";
+const CACHE = "tmc-epr-v1.0.3";
 
 const SHELL = [
   "./",
   "./index.html",
   "./manifest.json",
-  "./icons/icon-192.png",
-  "./icons/icon-512.png",
-  "./icons/maskable-512.png",
-  "./icons/icon-180.png",
-  "./icons/favicon-32.png",
+  "./icon-192.png",
+  "./icon-512.png",
+  "./maskable-512.png",
+  "./icon-180.png",
+  "./favicon-32.png",
 ];
 
 self.addEventListener("install", (e) => {

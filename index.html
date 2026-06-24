@@ -6,16 +6,29 @@
 <meta name="theme-color" content="#0B0F12">
 <title>Manual EPR · PW2037</title>
 <link rel="manifest" href="manifest.json">
-<link rel="icon" href="icons/favicon-32.png" sizes="32x32" type="image/png">
-<link rel="apple-touch-icon" href="icons/icon-180.png">
+<link rel="icon" href="favicon-32.png" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="icon-180.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="EPR 2037">
 <style>
-  :root{
+  :root, :root[data-theme="night"]{
     --bg:#0B0F12; --panel:#141A1F; --panel2:#0F151A; --line:#263038;
     --txt:#E6EDF1; --muted:#8A9AA6; --dim:#5C6B76;
     --green:#3DDC84; --amber:#FFB000; --cyan:#29B6F6; --red:#FF5C5C;
+    --card:#0C1116; --thead:#10171D; --tline:#1D262D;
+    --onGreen:#06210F; --onCyan:#04212E; --chipOn:#CFEEFF; --ghostActive:#1A222A;
+    --warnBg2:#171204; --warnLine:#4A3A14; --warnTxt:#D9C9A0;
+  }
+  :root[data-theme="day"]{
+    --bg:#DCE2E7; --panel:#FFFFFF; --panel2:#EDF1F4; --line:#B4BFC9;
+    --txt:#0A1318; --muted:#3F4F5A; --dim:#5C6C78;
+    --green:#0C6E37; --amber:#8A5600; --cyan:#0A5A89; --red:#B0221A;
+    --card:#FFFFFF; --thead:#DCE5EB; --tline:#C3CED6;
+    --onGreen:#FFFFFF; --onCyan:#FFFFFF; --chipOn:#06405E; --ghostActive:#E1E8ED;
+    --warnBg2:#FFF2D2; --warnLine:#D6A036; --warnTxt:#5A4413;
+  }
+  :root{
     --mono:ui-monospace,"SF Mono","SFMono-Regular",Menlo,Consolas,"Liberation Mono",monospace;
     --sans:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
   }
@@ -40,10 +53,10 @@
   .dot.off{background:var(--amber)}
 
   /* INOP banner */
-  .inop{margin:14px 0; border:1px solid #4a3a14; background:linear-gradient(0deg,#1c1607,#171204);
+  .inop{margin:14px 0; border:1px solid var(--warnLine); background:var(--warnBg2);
     border-radius:10px; padding:11px 13px; display:flex; gap:11px}
   .inop .mk{font-family:var(--mono); color:var(--amber); font-weight:700; font-size:18px; line-height:1.2}
-  .inop p{margin:0; font-size:12.5px; color:#d9c9a0}
+  .inop p{margin:0; font-size:12.5px; color:var(--warnTxt)}
   .inop b{color:var(--amber)}
 
   section{background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:15px; margin:14px 0}
@@ -67,14 +80,14 @@
   .chip{display:inline-flex; align-items:center; gap:7px; border:1px solid var(--line);
     background:var(--panel2); border-radius:999px; padding:8px 13px; font-size:13px; cursor:pointer; user-select:none}
   .chip input{width:auto; accent-color:var(--cyan); margin:0}
-  .chip.on{border-color:var(--cyan); color:#cfeeff}
+  .chip.on{border-color:var(--cyan); color:var(--chipOn)}
 
   .btnrow{display:flex; flex-wrap:wrap; gap:10px; margin-top:14px}
   button{font-family:var(--sans); font-size:14px; font-weight:600; border-radius:9px; padding:11px 16px; cursor:pointer; border:1px solid var(--line)}
-  .primary{background:var(--green); color:#06210f; border-color:transparent}
+  .primary{background:var(--green); color:var(--onGreen); border-color:transparent}
   .primary:active{filter:brightness(.92)}
   .ghost{background:transparent; color:var(--txt)}
-  .ghost:active{background:#1a222a}
+  .ghost:active{background:var(--ghostActive)}
   button:disabled{opacity:.5; cursor:default}
 
   .status{margin-top:10px; font-size:12.5px; font-family:var(--mono); min-height:1.2em}
@@ -87,7 +100,7 @@
 
   /* ---- generated card ---- */
   #cardOut{display:none}
-  .card{background:#0c1116; border:1px solid var(--line); border-radius:12px; overflow:hidden}
+  .card{background:var(--card); border:1px solid var(--line); border-radius:12px; overflow:hidden}
   .card-h{padding:13px 15px; border-bottom:1px solid var(--line); display:flex; align-items:baseline; gap:9px; flex-wrap:wrap}
   .route{font-family:var(--mono); font-size:20px; font-weight:700; letter-spacing:.02em}
   .route .arr{color:var(--cyan); padding:0 4px}
@@ -95,7 +108,7 @@
   .card-h .stamp{margin-left:auto; color:var(--dim); font-size:11px; font-family:var(--mono)}
 
   .wx{display:grid; grid-template-columns:1fr 1fr; gap:1px; background:var(--line)}
-  .wx .cell{background:#0c1116; padding:12px 14px}
+  .wx .cell{background:var(--card); padding:12px 14px}
   .wx .ap{font-family:var(--mono); font-weight:700; color:var(--green); font-size:14px}
   .wx .ap .nm{color:var(--muted); font-weight:500; font-size:11px; display:block; text-transform:none; letter-spacing:0}
   .wx .line{font-size:12px; color:var(--muted); margin-top:6px}
@@ -116,10 +129,10 @@
   /* ---- manual lookup ---- */
   .tabs{display:flex; gap:6px; background:var(--panel2); border:1px solid var(--line); border-radius:10px; padding:4px; margin-bottom:14px}
   .tab{flex:1; text-align:center; padding:9px 4px; border-radius:7px; font-family:var(--mono); font-size:13px; font-weight:700; color:var(--muted); cursor:pointer; border:none; background:transparent}
-  .tab.on{background:var(--cyan); color:#04212e}
+  .tab.on{background:var(--cyan); color:var(--onCyan)}
 
   .readout{display:grid; grid-template-columns:1fr auto; gap:14px; align-items:center;
-    background:linear-gradient(180deg,#0e1419,#0a0f13); border:1px solid var(--line); border-radius:12px; padding:16px 18px; margin-top:14px}
+    background:var(--card); border:1px solid var(--line); border-radius:12px; padding:16px 18px; margin-top:14px}
   .readout .lbl{font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:var(--muted)}
   .readout .big{font-family:var(--mono); font-weight:700; font-size:54px; line-height:.95; color:var(--green); letter-spacing:.01em}
   .readout .calc{font-family:var(--mono); font-size:12px; color:var(--muted); margin-top:7px}
@@ -139,13 +152,78 @@
   details.raw>summary small{color:var(--muted); font-weight:500}
   .tscroll{overflow:auto; -webkit-overflow-scrolling:touch; padding:0 10px 12px}
   table{border-collapse:collapse; font-family:var(--mono); font-size:11px; white-space:nowrap}
-  th,td{border:1px solid #1d262d; padding:4px 7px; text-align:center}
-  thead th{position:sticky; top:0; background:#10171d; color:var(--cyan); z-index:1}
-  tbody th{position:sticky; left:0; background:#10171d; color:var(--amber); text-align:right}
+  th,td{border:1px solid var(--tline); padding:4px 7px; text-align:center}
+  thead th{position:sticky; top:0; background:var(--thead); color:var(--cyan); z-index:1}
+  tbody th{position:sticky; left:0; background:var(--thead); color:var(--amber); text-align:right}
   td{color:var(--muted)}
 
   .foot{margin-top:20px; text-align:center; color:var(--dim); font-size:11px; font-family:var(--mono); line-height:1.6}
   .foot a{color:var(--muted)}
+
+  /* ---- flight-deck controls: theme / dim / warm ---- */
+  .top{flex-wrap:wrap}
+  .ctrls{display:flex; align-items:center; gap:10px; flex-wrap:wrap; flex-basis:100%; margin-top:8px}
+  .seg{display:inline-flex; border:1px solid var(--line); border-radius:9px; overflow:hidden}
+  .seg button{border:none; border-radius:0; background:transparent; color:var(--muted);
+    padding:9px 14px; font-size:12px; font-weight:700; letter-spacing:.06em; min-height:42px; font-family:var(--sans)}
+  .seg button.on{background:var(--cyan); color:var(--onCyan)}
+  .seg button+button{border-left:1px solid var(--line)}
+  .dimwrap{display:inline-flex; align-items:center; gap:9px; flex:1 1 150px; min-width:128px}
+  .dimwrap .dl{font-size:11px; color:var(--muted); letter-spacing:.12em; font-family:var(--mono)}
+  #dimRange{flex:1; accent-color:var(--cyan); height:30px; min-width:72px}
+  .warmbtn{padding:9px 14px; font-size:12px; font-weight:700; letter-spacing:.06em; color:var(--muted);
+    background:transparent; border:1px solid var(--line); border-radius:9px; min-height:42px; font-family:var(--sans)}
+  .warmbtn.on{border-color:var(--amber); color:var(--amber)}
+  #flightBtn.on{border-color:var(--green); color:var(--green)}
+  #awakeBtn.on{border-color:var(--green); color:var(--green)}
+
+  /* ---- in-flight mode: setup hidden, card + manual lookup enlarged ---- */
+  html[data-flight="1"] #buildPanel,
+  html[data-flight="1"] #rawPanel,
+  html[data-flight="1"] .inop,
+  html[data-flight="1"] .foot{ display:none!important }
+  html[data-flight="1"] .readout{ padding:22px 22px }
+  html[data-flight="1"] .readout .big{ font-size:104px }
+  html[data-flight="1"] .ph{ padding:18px }
+  html[data-flight="1"] .ph .epr{ font-size:50px }
+  html[data-flight="1"] .ph .epr.range{ font-size:36px }
+  html[data-flight="1"] .tab{ min-height:58px; font-size:17px }
+  html[data-flight="1"] #mRow, html[data-flight="1"] #mCol{ min-height:60px; font-size:19px }
+
+  /* ---- screen dimmer overlay (below iOS minimum; preserves night vision) ---- */
+  #dimmer{position:fixed; inset:0; background:#000; opacity:0; pointer-events:none;
+    z-index:9998; transition:opacity .12s linear, background-color .2s}
+  #dimmer.warm{background:#3a0c00}
+
+  /* ---- layout containers ---- */
+  .grid-main{display:block}
+  .col{min-width:0}
+
+  /* ---- iPad: legibility at arm's length + glove/turbulence touch targets ---- */
+  @media (min-width:768px){
+    body{font-size:16.5px}
+    .wrap{max-width:920px; padding:18px 20px 90px}
+    .ttl{font-size:18px} .ttl small{font-size:12.5px}
+    h2{font-size:14px} .sub{font-size:13px}
+    input,select{font-size:17px; padding:13px 14px; min-height:54px}
+    button{font-size:16px; padding:14px 20px; min-height:54px}
+    .chip{font-size:15px; padding:12px 17px; min-height:50px}
+    .tab{padding:14px 6px; font-size:16px; min-height:52px}
+    .readout .big{font-size:78px} .readout .calc{font-size:13.5px}
+    .ph{grid-template-columns:104px 1fr auto; padding:16px 18px}
+    .ph .epr{font-size:40px} .ph .epr.range{font-size:30px}
+    .route{font-size:24px}
+    table{font-size:13px} th,td{padding:6px 10px}
+    .seg button{font-size:13px; min-height:46px} .warmbtn{min-height:46px}
+  }
+  @media (min-width:768px) and (orientation:portrait){ .wrap{max-width:840px} }
+  /* landscape iPad: use the width — card + manual side by side */
+  @media (min-width:1040px) and (orientation:landscape){
+    .wrap{max-width:1340px}
+    .grid-main{display:grid; grid-template-columns:1fr 1fr; gap:20px; align-items:start}
+    .readout .big{font-size:88px}
+  }
+  @media (prefers-reduced-motion:reduce){ *{scroll-behavior:auto!important} }
 
   @media (max-width:520px){
     .pair{grid-template-columns:1fr 1fr}
@@ -154,7 +232,8 @@
   }
   @media print{
     body{background:#fff; color:#000}
-    .top,.inop,#buildPanel,#manualPanel,#rawPanel,.foot,.btnrow{display:none!important}
+    .top,.inop,#buildPanel,#manualPanel,#rawPanel,.foot,.btnrow,#dimmer{display:none!important}
+    .grid-main{display:block!important}
     section{border:none;padding:0;margin:0;background:#fff}
     #cardOut{display:block!important}
     .card,.card *{background:#fff!important;color:#000!important;border-color:#999!important}
@@ -162,39 +241,55 @@
     .ph .epr{color:#000!important} .ph .epr small{color:#444!important}
   }
 </style>
+<script>
+/* set theme pre-paint to avoid a bright flash in a dark cockpit */
+try{var p=JSON.parse(localStorage.getItem('tmcEprPrefs')||'{}');
+var t=p.theme==='day'?'day':(p.theme==='night'?'night':((window.matchMedia&&matchMedia('(prefers-color-scheme: light)').matches)?'day':'night'));
+document.documentElement.setAttribute('data-theme',t);}catch(e){}
+</script>
 </head>
 <body>
+<div id="dimmer"></div>
 <div class="wrap">
 
   <div class="top">
     <span class="badge">PW2037</span>
     <div class="ttl">Manual EPR<small>TMC inop · thrust backup</small></div>
     <div class="net"><span id="netDot" class="dot"></span><span id="netTxt">…</span></div>
+    <div class="ctrls">
+      <div class="seg" id="themeSeg">
+        <button type="button" data-theme="day">Day</button>
+        <button type="button" data-theme="night">Night</button>
+        <button type="button" data-theme="auto">Auto</button>
+      </div>
+      <button type="button" class="warmbtn" id="flightBtn">IN-FLIGHT</button>
+      <button type="button" class="warmbtn" id="awakeBtn">AWAKE</button>
+      <button type="button" class="warmbtn" id="warmBtn">WARM</button>
+      <label class="dimwrap"><span class="dl">DIM</span><input type="range" id="dimRange" min="0" max="80" value="0" aria-label="Screen dim"></label>
+    </div>
   </div>
 
-  <div class="inop">
-    <div class="mk">▲</div>
-    <p><b>Unofficial crew aid.</b> EPR values are transcribed from the PW2037 thrust-setting charts and are for cross-reference only. Always confirm against the aircraft <b>AFM / QRH / FOM</b> and limitations. Values snap to the nearest chart grid point — read conservatively between values.</p>
-  </div>
+  <div class="grid-main">
+  <div class="col">
 
   <!-- ============ BUILD CARD ============ -->
   <section id="buildPanel">
     <h2>Build flight card</h2>
-    <p class="sub">Enter the pair, pull weather once while you have signal, then it lives offline. OAT/PA fields are editable — type them straight from ATIS/FMC if you’re already off-grid.</p>
+    <p class="sub">Enter the pair and tap Pull weather — it fills OAT, altimeter and pressure altitude for both ends, then lives offline. Fields stay editable; type them from ATIS/FMC if you’re already off-grid.</p>
 
     <div class="grid g2">
-      <div class="field"><label>Departure ICAO</label><input id="depIcao" inputmode="text" autocapitalize="characters" autocomplete="off" maxlength="4" placeholder="KLAS"></div>
-      <div class="field"><label>Arrival ICAO</label><input id="arrIcao" inputmode="text" autocapitalize="characters" autocomplete="off" maxlength="4" placeholder="KATL"></div>
+      <div class="field"><label>Departure ICAO</label><input id="depIcao" inputmode="text" autocapitalize="characters" autocomplete="off" maxlength="4"></div>
+      <div class="field"><label>Arrival ICAO</label><input id="arrIcao" inputmode="text" autocapitalize="characters" autocomplete="off" maxlength="4"></div>
     </div>
 
     <div class="pair" style="margin-top:11px">
-      <div class="field"><label>Dep OAT °C</label><input id="depOat" inputmode="numeric" placeholder="40"></div>
-      <div class="field"><label>Dep press alt ft</label><input id="depPa" inputmode="numeric" placeholder="2000"></div>
-      <div class="field"><label>Cruise FL</label><input id="cruiseFl" inputmode="numeric" placeholder="350"></div>
+      <div class="field"><label>Dep OAT °C</label><input id="depOat" inputmode="numeric"></div>
+      <div class="field"><label>Dep press alt ft</label><input id="depPa" inputmode="numeric"></div>
+      <div class="field"><label>Cruise FL</label><input id="cruiseFl" inputmode="numeric"></div>
     </div>
     <div class="pair" style="margin-top:11px">
-      <div class="field"><label>Arr OAT °C</label><input id="arrOat" inputmode="numeric" placeholder="26"></div>
-      <div class="field"><label>Arr press alt ft</label><input id="arrPa" inputmode="numeric" placeholder="1000"></div>
+      <div class="field"><label>Arr OAT °C</label><input id="arrOat" inputmode="numeric"></div>
+      <div class="field"><label>Arr press alt ft</label><input id="arrPa" inputmode="numeric"></div>
       <div class="field"><label>&nbsp;</label><button class="ghost" id="paHelpBtn" style="width:100%" type="button">PA from QNH…</button></div>
     </div>
 
@@ -211,8 +306,8 @@
     <details class="adv" id="paHelp">
       <summary>Pressure-altitude helper (elevation + altimeter)</summary>
       <div class="pair" style="margin-top:10px">
-        <div class="field"><label>Field elev ft</label><input id="helpElev" inputmode="numeric" placeholder="2181"></div>
-        <div class="field"><label>Altimeter</label><input id="helpQnh" inputmode="decimal" placeholder="29.92"></div>
+        <div class="field"><label>Field elev ft</label><input id="helpElev" inputmode="numeric"></div>
+        <div class="field"><label>Altimeter</label><input id="helpQnh" inputmode="decimal"></div>
         <div class="field"><label>Units</label><select id="helpUnit"><option value="inhg">inHg</option><option value="hpa">hPa</option></select></div>
       </div>
       <div class="btnrow">
@@ -235,7 +330,7 @@
     </details>
 
     <div class="btnrow">
-      <button class="ghost" id="fetchBtn" type="button">⤓ Fetch weather</button>
+      <button class="ghost" id="fetchBtn" type="button">⤓ Pull weather &amp; PA</button>
       <button class="primary" id="buildBtn" type="button">Build card</button>
       <button class="ghost" id="clearBtn" type="button">Clear</button>
     </div>
@@ -252,6 +347,9 @@
       <button class="ghost" id="editBtn" type="button">Edit inputs</button>
     </div>
   </section>
+
+  </div>
+  <div class="col">
 
   <!-- ============ MANUAL LOOKUP ============ -->
   <section id="manualPanel">
@@ -284,6 +382,14 @@
     <div id="rawTables"></div>
   </section>
 
+  </div>
+  </div>
+
+  <div class="inop">
+    <div class="mk">▲</div>
+    <p><b>Unofficial crew aid.</b> EPR values are transcribed from the PW2037 thrust-setting charts and are for cross-reference only. Always confirm against the aircraft <b>AFM / QRH / FOM</b> and limitations. Values snap to the nearest chart grid point — read conservatively between values.</p>
+  </div>
+
   <div class="foot">
     PW2037 manual-EPR backup · <span id="ver"></span><br>
     Data transcribed from operator thrust-setting charts · verify against AFM/QRH.
@@ -293,7 +399,7 @@
 
 <script>
 /* ====================== CACHE / SW ====================== */
-const CACHE_VERSION = "tmc-epr-v1.0.1";
+const CACHE_VERSION = "tmc-epr-v1.0.3";
 document.getElementById("ver").textContent = CACHE_VERSION;
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
@@ -460,6 +566,16 @@ function paFromElevAltim(elevFt,altim,unit){
 }
 function isaSAT(altFt){ return altFt<=36089 ? 15 - 1.98*(altFt/1000) : -56.5; }
 function tatFromSAT(satC,mach){ return (satC+273.15)*(1+0.2*mach*mach) - 273.15; }
+function altimInHg(a){ if(a==null||!isFinite(+a)) return null; a=+a; return a>100 ? a*0.0295299830714 : a; } // hPa→inHg, pass-through if already inHg
+function obToFields(ob, oatEl, paEl){
+  const oat = (ob.temp!=null && isFinite(+ob.temp)) ? Math.round(+ob.temp) : null;
+  if(oat!=null) oatEl.value = oat;
+  const elevM = parseFloat(ob.elev); const elevFt = isFinite(elevM) ? elevM*M2FT : 0;
+  const inHg = altimInHg(ob.altim);
+  let pa = null;
+  if(inHg!=null){ pa = paFromElevAltim(elevFt, inHg, "inhg"); paEl.value = pa; }
+  return { oat, inHg, pa, elevFt: Math.round(elevFt) };
+}
 
 /* ====================== ELEMENTS ====================== */
 const $=id=>document.getElementById(id);
@@ -514,18 +630,16 @@ $("fetchBtn").addEventListener("click", async ()=>{
   try{
     let got=[];
     if(dep.length>=3){
-      const d=await fetchOne(dep,proxy);
-      els.depOat.value=Math.round(d.ob.temp);
-      els.depPa.value=paFromElevAltim((d.ob.elev||0)*M2FT, d.ob.altim, "hpa");
-      wxCache.dep=d; got.push(dep);
+      const d=await fetchOne(dep,proxy); wxCache.dep=d;
+      const r=obToFields(d.ob, els.depOat, els.depPa);
+      got.push(dep+(r.oat!=null?" "+r.oat+"°C":"")+(r.inHg!=null?" · "+r.inHg.toFixed(2)+'"':"")+(r.pa!=null?" · PA "+r.pa:""));
     }
     if(arr.length>=3){
-      const a=await fetchOne(arr,proxy);
-      els.arrOat.value=Math.round(a.ob.temp);
-      els.arrPa.value=paFromElevAltim((a.ob.elev||0)*M2FT, a.ob.altim, "hpa");
-      wxCache.arr=a; got.push(arr);
+      const a=await fetchOne(arr,proxy); wxCache.arr=a;
+      const r=obToFields(a.ob, els.arrOat, els.arrPa);
+      got.push(arr+(r.oat!=null?" "+r.oat+"°C":"")+(r.inHg!=null?" · "+r.inHg.toFixed(2)+'"':"")+(r.pa!=null?" · PA "+r.pa:""));
     }
-    setStatus("Weather loaded for "+got.join(" & ")+". Review fields, then Build card.","ok");
+    setStatus("Pulled  "+got.join("    ")+".  Build card when ready.","ok");
     saveState();
   }catch(err){
     setStatus("Couldn’t pull weather ("+err.message+"). Type OAT/PA from ATIS/FMC and Build card — works the same.","err");
@@ -581,8 +695,9 @@ function buildCard(){
   const wxCell=(icao,oat,pa,wx)=>{
     const ob=wx&&wx.ob; const name=ob&&ob.name?ob.name:"";
     const raw=ob&&ob.rawOb?ob.rawOb:""; const taf=wx&&wx.taf&&wx.taf.rawTAF?wx.taf.rawTAF:"";
+    const qnh=ob?altimInHg(ob.altim):null;
     return `<div class="cell"><div class="ap">${icao}<span class="nm">${esc(name)}</span></div>
-      <div class="line">OAT ${oat==null?"—":oat+"°C"} · PA ${pa==null?"—":Math.round(pa)+" ft"}</div>
+      <div class="line">OAT ${oat==null?"—":oat+"°C"}${qnh!=null?' · '+qnh.toFixed(2)+'"':''} · PA ${pa==null?"—":Math.round(pa)+" ft"}</div>
       ${raw?`<div class="raw">${esc(raw)}</div>`:""}${taf?`<div class="raw">${esc(taf)}</div>`:""}</div>`;
   };
   const phRow=(tag,sub,cond,eprHtml,cls)=>`<div class="ph"><div class="tag">${tag}<small>${sub}</small></div>
@@ -705,6 +820,49 @@ function buildRaw(){
   });
 }
 
+/* ====================== DISPLAY: theme / dim / orientation ====================== */
+const PKEY="tmcEprPrefs";
+let prefs=Object.assign({theme:"auto",dim:0,warm:false,awake:false,flight:false},(()=>{try{return JSON.parse(localStorage.getItem(PKEY)||"{}")}catch(e){return{}}})());
+function savePrefs(){try{localStorage.setItem(PKEY,JSON.stringify(prefs));}catch(e){}}
+const lightMQ = window.matchMedia ? window.matchMedia("(prefers-color-scheme: light)") : null;
+function effTheme(){ return prefs.theme==="auto" ? (lightMQ && lightMQ.matches ? "day":"night") : prefs.theme; }
+function applyTheme(){
+  const t=effTheme();
+  document.documentElement.setAttribute("data-theme",t);
+  const m=document.querySelector('meta[name=theme-color]'); if(m) m.setAttribute("content", t==="day"?"#DCE2E7":"#0B0F12");
+  document.querySelectorAll("#themeSeg button").forEach(b=>b.classList.toggle("on", b.dataset.theme===prefs.theme));
+}
+function applyDim(){
+  const d=$("dimmer"); d.style.opacity=(prefs.dim/100).toFixed(2); d.classList.toggle("warm",!!prefs.warm);
+  $("warmBtn").classList.toggle("on",!!prefs.warm);
+  const r=$("dimRange"); if(r && +r.value!==prefs.dim) r.value=prefs.dim;
+}
+document.querySelectorAll("#themeSeg button").forEach(b=>{ b.addEventListener("click",()=>{prefs.theme=b.dataset.theme; applyTheme(); savePrefs();}); });
+$("dimRange").addEventListener("input",e=>{ prefs.dim=+e.target.value; applyDim(); savePrefs(); });
+$("warmBtn").addEventListener("click",()=>{ prefs.warm=!prefs.warm; applyDim(); savePrefs(); });
+if(lightMQ){ const h=()=>{ if(prefs.theme==="auto") applyTheme(); }; lightMQ.addEventListener? lightMQ.addEventListener("change",h): lightMQ.addListener(h); }
+
+/* in-flight mode: hide setup, enlarge card + manual lookup */
+function applyFlight(){
+  document.documentElement.setAttribute("data-flight", prefs.flight?"1":"0");
+  const b=$("flightBtn"); b.classList.toggle("on",!!prefs.flight); b.textContent=prefs.flight?"EXIT":"IN-FLIGHT";
+}
+$("flightBtn").addEventListener("click",()=>{ prefs.flight=!prefs.flight; applyFlight(); savePrefs(); if(prefs.flight) window.scrollTo(0,0); });
+
+/* keep screen awake (iOS Wake Lock); iOS drops the lock on background, so re-acquire on return */
+let wakeLock=null; const wakeSupported=("wakeLock" in navigator);
+async function acquireWake(){ if(!wakeSupported) return; try{ wakeLock=await navigator.wakeLock.request("screen"); wakeLock.addEventListener("release",()=>{ wakeLock=null; }); }catch(e){ wakeLock=null; } }
+function releaseWake(){ try{ if(wakeLock) wakeLock.release(); }catch(e){} wakeLock=null; }
+function applyAwakeBtn(){ const b=$("awakeBtn"); b.classList.toggle("on",!!prefs.awake);
+  b.textContent=(prefs.awake && !wakeSupported)?"AWAKE*":"AWAKE";
+  b.title=wakeSupported?"Keep screen awake":"Keep-awake not supported by this browser"; }
+$("awakeBtn").addEventListener("click", async ()=>{ prefs.awake=!prefs.awake; savePrefs(); if(prefs.awake) await acquireWake(); else releaseWake(); applyAwakeBtn(); });
+document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==="visible" && prefs.awake && !wakeLock) acquireWake(); });
+
+function orient(){ document.documentElement.setAttribute("data-orient", (window.innerWidth>=window.innerHeight)?"landscape":"portrait"); }
+window.addEventListener("resize",orient);
+window.addEventListener("orientationchange",()=>setTimeout(orient,80));
+
 /* ====================== NET INDICATOR ====================== */
 function netUpdate(){
   const on=navigator.onLine; const dot=$("netDot"),txt=$("netTxt");
@@ -722,6 +880,8 @@ function restore(){
   if(s.cardBuilt){ buildCard(); setStatus("Restored saved card.","ok"); }
 }
 [ "depIcao","arrIcao","depOat","depPa","arrOat","arrPa","cruiseFl","proxy"].forEach(k=>els[k].addEventListener("input",()=>saveState()));
+applyTheme(); applyDim(); applyFlight(); applyAwakeBtn(); orient();
+if(prefs.awake) acquireWake();
 buildTabs(); buildManual(); buildRaw(); netUpdate(); restore();
 </script>
 </body>
