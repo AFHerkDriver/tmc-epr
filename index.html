@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0B0F12">
+<title>Manual EPR · PW2037</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icons/favicon-32.png" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="EPR 2037">
+<style>
+  :root{
+    --bg:#0B0F12; --panel:#141A1F; --panel2:#0F151A; --line:#263038;
+    --txt:#E6EDF1; --muted:#8A9AA6; --dim:#5C6B76;
+    --green:#3DDC84; --amber:#FFB000; --cyan:#29B6F6; --red:#FF5C5C;
+    --mono:ui-monospace,"SF Mono","SFMono-Regular",Menlo,Consolas,"Liberation Mono",monospace;
+    --sans:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{
+    background:var(--bg); color:var(--txt); font-family:var(--sans);
+    line-height:1.45; -webkit-text-size-adjust:100%;
+    padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  }
+  .wrap{max-width:780px; margin:0 auto; padding:14px 14px 60px}
+
+  /* top bar */
+  .top{display:flex; align-items:center; gap:10px; padding:6px 2px 12px; border-bottom:1px solid var(--line)}
+  .badge{font-family:var(--mono); font-weight:700; font-size:12px; letter-spacing:.04em;
+    color:var(--green); border:1px solid var(--line); border-radius:6px; padding:3px 7px; white-space:nowrap}
+  .ttl{font-size:15px; font-weight:650; letter-spacing:.01em}
+  .ttl small{display:block; color:var(--muted); font-weight:500; font-size:11.5px; letter-spacing:.06em; text-transform:uppercase}
+  .net{margin-left:auto; display:flex; align-items:center; gap:6px; font-family:var(--mono); font-size:11px; color:var(--muted)}
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--dim);box-shadow:0 0 0 0 rgba(0,0,0,0)}
+  .dot.on{background:var(--green);box-shadow:0 0 8px var(--green)}
+  .dot.off{background:var(--amber)}
+
+  /* INOP banner */
+  .inop{margin:14px 0; border:1px solid #4a3a14; background:linear-gradient(0deg,#1c1607,#171204);
+    border-radius:10px; padding:11px 13px; display:flex; gap:11px}
+  .inop .mk{font-family:var(--mono); color:var(--amber); font-weight:700; font-size:18px; line-height:1.2}
+  .inop p{margin:0; font-size:12.5px; color:#d9c9a0}
+  .inop b{color:var(--amber)}
+
+  section{background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:15px; margin:14px 0}
+  h2{margin:0 0 4px; font-size:13px; letter-spacing:.09em; text-transform:uppercase; color:var(--cyan); font-weight:650}
+  .sub{margin:0 0 13px; font-size:12px; color:var(--muted)}
+
+  label{display:block; font-size:11px; letter-spacing:.05em; text-transform:uppercase; color:var(--muted); margin:0 0 5px}
+  input,select{
+    width:100%; background:var(--panel2); color:var(--txt); border:1px solid var(--line);
+    border-radius:8px; padding:10px 11px; font-size:15px; font-family:var(--sans);
+  }
+  input[inputmode]{font-family:var(--mono)}
+  input:focus,select:focus{outline:2px solid var(--cyan); outline-offset:0; border-color:transparent}
+  .grid{display:grid; gap:11px}
+  .g2{grid-template-columns:1fr 1fr}
+  .g3{grid-template-columns:repeat(3,1fr)}
+  .field{min-width:0}
+  .pair{display:grid; grid-template-columns:1fr 1fr 1fr; gap:9px; align-items:end}
+
+  .chips{display:flex; flex-wrap:wrap; gap:8px; margin-top:4px}
+  .chip{display:inline-flex; align-items:center; gap:7px; border:1px solid var(--line);
+    background:var(--panel2); border-radius:999px; padding:8px 13px; font-size:13px; cursor:pointer; user-select:none}
+  .chip input{width:auto; accent-color:var(--cyan); margin:0}
+  .chip.on{border-color:var(--cyan); color:#cfeeff}
+
+  .btnrow{display:flex; flex-wrap:wrap; gap:10px; margin-top:14px}
+  button{font-family:var(--sans); font-size:14px; font-weight:600; border-radius:9px; padding:11px 16px; cursor:pointer; border:1px solid var(--line)}
+  .primary{background:var(--green); color:#06210f; border-color:transparent}
+  .primary:active{filter:brightness(.92)}
+  .ghost{background:transparent; color:var(--txt)}
+  .ghost:active{background:#1a222a}
+  button:disabled{opacity:.5; cursor:default}
+
+  .status{margin-top:10px; font-size:12.5px; font-family:var(--mono); min-height:1.2em}
+  .status.err{color:var(--amber)} .status.ok{color:var(--green)} .status.work{color:var(--cyan)}
+
+  details.adv{margin-top:12px; border-top:1px dashed var(--line); padding-top:11px}
+  details.adv>summary{cursor:pointer; font-size:12px; color:var(--muted); letter-spacing:.04em}
+  details.adv label{margin-top:10px}
+  .hint{font-size:11px; color:var(--dim); margin-top:6px; line-height:1.4}
+
+  /* ---- generated card ---- */
+  #cardOut{display:none}
+  .card{background:#0c1116; border:1px solid var(--line); border-radius:12px; overflow:hidden}
+  .card-h{padding:13px 15px; border-bottom:1px solid var(--line); display:flex; align-items:baseline; gap:9px; flex-wrap:wrap}
+  .route{font-family:var(--mono); font-size:20px; font-weight:700; letter-spacing:.02em}
+  .route .arr{color:var(--cyan); padding:0 4px}
+  .card-h .meta{color:var(--muted); font-size:12px; font-family:var(--mono)}
+  .card-h .stamp{margin-left:auto; color:var(--dim); font-size:11px; font-family:var(--mono)}
+
+  .wx{display:grid; grid-template-columns:1fr 1fr; gap:1px; background:var(--line)}
+  .wx .cell{background:#0c1116; padding:12px 14px}
+  .wx .ap{font-family:var(--mono); font-weight:700; color:var(--green); font-size:14px}
+  .wx .ap .nm{color:var(--muted); font-weight:500; font-size:11px; display:block; text-transform:none; letter-spacing:0}
+  .wx .line{font-size:12px; color:var(--muted); margin-top:6px}
+  .wx .raw{font-family:var(--mono); font-size:10.5px; color:var(--dim); margin-top:7px; word-break:break-word; white-space:pre-wrap}
+
+  .phases{padding:6px 0}
+  .ph{display:grid; grid-template-columns:88px 1fr auto; gap:12px; align-items:center; padding:13px 15px; border-top:1px solid var(--line)}
+  .ph:first-child{border-top:none}
+  .ph .tag{font-family:var(--mono); font-weight:700; font-size:13px; color:var(--cyan); letter-spacing:.05em}
+  .ph .tag small{display:block; color:var(--muted); font-weight:500; font-size:10.5px; letter-spacing:.04em}
+  .ph .cond{font-size:11.5px; color:var(--muted); font-family:var(--mono)}
+  .ph .epr{font-family:var(--mono); font-weight:700; font-size:30px; color:var(--green); text-align:right; line-height:1}
+  .ph .epr.range{font-size:22px}
+  .ph .epr small{display:block; font-size:10px; color:var(--amber); font-weight:600; letter-spacing:.03em; margin-top:3px; text-align:right}
+  .card-notes{padding:12px 15px; border-top:1px solid var(--line); font-size:11.5px; color:var(--muted)}
+  .card-notes ul{margin:6px 0 0; padding-left:18px} .card-notes li{margin:3px 0}
+
+  /* ---- manual lookup ---- */
+  .tabs{display:flex; gap:6px; background:var(--panel2); border:1px solid var(--line); border-radius:10px; padding:4px; margin-bottom:14px}
+  .tab{flex:1; text-align:center; padding:9px 4px; border-radius:7px; font-family:var(--mono); font-size:13px; font-weight:700; color:var(--muted); cursor:pointer; border:none; background:transparent}
+  .tab.on{background:var(--cyan); color:#04212e}
+
+  .readout{display:grid; grid-template-columns:1fr auto; gap:14px; align-items:center;
+    background:linear-gradient(180deg,#0e1419,#0a0f13); border:1px solid var(--line); border-radius:12px; padding:16px 18px; margin-top:14px}
+  .readout .lbl{font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:var(--muted)}
+  .readout .big{font-family:var(--mono); font-weight:700; font-size:54px; line-height:.95; color:var(--green); letter-spacing:.01em}
+  .readout .calc{font-family:var(--mono); font-size:12px; color:var(--muted); margin-top:7px}
+  .readout .calc b{color:var(--amber); font-weight:700}
+  .readout .calc .neu{color:var(--txt)}
+
+  .bracket{margin-top:12px; border:1px dashed var(--line); border-radius:9px; padding:10px 12px}
+  .bracket .bh{font-size:10.5px; text-transform:uppercase; letter-spacing:.06em; color:var(--dim); margin-bottom:7px}
+  .bgrid{display:grid; grid-template-columns:repeat(2,1fr); gap:6px}
+  .bcell{font-family:var(--mono); font-size:12px; color:var(--muted); display:flex; justify-content:space-between; background:var(--panel2); border-radius:6px; padding:6px 9px}
+  .bcell b{color:var(--txt)}
+  .bcell.hit{outline:1px solid var(--green)} .bcell.hit b{color:var(--green)}
+
+  /* ---- raw tables ---- */
+  details.raw{border:1px solid var(--line); border-radius:10px; margin:10px 0; background:var(--panel2)}
+  details.raw>summary{cursor:pointer; padding:12px 14px; font-family:var(--mono); font-weight:700; font-size:13px; color:var(--cyan)}
+  details.raw>summary small{color:var(--muted); font-weight:500}
+  .tscroll{overflow:auto; -webkit-overflow-scrolling:touch; padding:0 10px 12px}
+  table{border-collapse:collapse; font-family:var(--mono); font-size:11px; white-space:nowrap}
+  th,td{border:1px solid #1d262d; padding:4px 7px; text-align:center}
+  thead th{position:sticky; top:0; background:#10171d; color:var(--cyan); z-index:1}
+  tbody th{position:sticky; left:0; background:#10171d; color:var(--amber); text-align:right}
+  td{color:var(--muted)}
+
+  .foot{margin-top:20px; text-align:center; color:var(--dim); font-size:11px; font-family:var(--mono); line-height:1.6}
+  .foot a{color:var(--muted)}
+
+  @media (max-width:520px){
+    .pair{grid-template-columns:1fr 1fr}
+    .ph{grid-template-columns:74px 1fr auto; gap:9px}
+    .readout .big{font-size:46px}
+  }
+  @media print{
+    body{background:#fff; color:#000}
+    .top,.inop,#buildPanel,#manualPanel,#rawPanel,.foot,.btnrow{display:none!important}
+    section{border:none;padding:0;margin:0;background:#fff}
+    #cardOut{display:block!important}
+    .card,.card *{background:#fff!important;color:#000!important;border-color:#999!important}
+    .route .arr,.ph .tag,.wx .ap{color:#000!important}
+    .ph .epr{color:#000!important} .ph .epr small{color:#444!important}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="top">
+    <span class="badge">PW2037</span>
+    <div class="ttl">Manual EPR<small>TMC inop · thrust backup</small></div>
+    <div class="net"><span id="netDot" class="dot"></span><span id="netTxt">…</span></div>
+  </div>
+
+  <div class="inop">
+    <div class="mk">▲</div>
+    <p><b>Unofficial crew aid.</b> EPR values are transcribed from the PW2037 thrust-setting charts and are for cross-reference only. Always confirm against the aircraft <b>AFM / QRH / FOM</b> and limitations. Values snap to the nearest chart grid point — read conservatively between values.</p>
+  </div>
+
+  <!-- ============ BUILD CARD ============ -->
+  <section id="buildPanel">
+    <h2>Build flight card</h2>
+    <p class="sub">Enter the pair, pull weather once while you have signal, then it lives offline. OAT/PA fields are editable — type them straight from ATIS/FMC if you’re already off-grid.</p>
+
+    <div class="grid g2">
+      <div class="field"><label>Departure ICAO</label><input id="depIcao" inputmode="text" autocapitalize="characters" autocomplete="off" maxlength="4" placeholder="KLAS"></div>
+      <div class="field"><label>Arrival ICAO</label><input id="arrIcao" inputmode="text" autocapitalize="characters" autocomplete="off" maxlength="4" placeholder="KATL"></div>
+    </div>
+
+    <div class="pair" style="margin-top:11px">
+      <div class="field"><label>Dep OAT °C</label><input id="depOat" inputmode="numeric" placeholder="40"></div>
+      <div class="field"><label>Dep press alt ft</label><input id="depPa" inputmode="numeric" placeholder="2000"></div>
+      <div class="field"><label>Cruise FL</label><input id="cruiseFl" inputmode="numeric" placeholder="350"></div>
+    </div>
+    <div class="pair" style="margin-top:11px">
+      <div class="field"><label>Arr OAT °C</label><input id="arrOat" inputmode="numeric" placeholder="26"></div>
+      <div class="field"><label>Arr press alt ft</label><input id="arrPa" inputmode="numeric" placeholder="1000"></div>
+      <div class="field"><label>&nbsp;</label><button class="ghost" id="paHelpBtn" style="width:100%" type="button">PA from QNH…</button></div>
+    </div>
+
+    <div style="margin-top:14px">
+      <label>Bleed / anti-ice configuration</label>
+      <div class="chips" id="cfgChips">
+        <label class="chip"><input type="checkbox" id="cfgPacksOff"><span>Packs OFF</span></label>
+        <label class="chip"><input type="checkbox" id="cfgEngAI"><span>Engine A/I ON</span></label>
+        <label class="chip"><input type="checkbox" id="cfgWingAI"><span>Wing A/I ON</span></label>
+      </div>
+      <div class="hint">Applied per phase where the chart provides a correction (e.g. Wing A/I isn’t a takeoff item; engine A/I above 8000 ft = −0.03).</div>
+    </div>
+
+    <details class="adv" id="paHelp">
+      <summary>Pressure-altitude helper (elevation + altimeter)</summary>
+      <div class="pair" style="margin-top:10px">
+        <div class="field"><label>Field elev ft</label><input id="helpElev" inputmode="numeric" placeholder="2181"></div>
+        <div class="field"><label>Altimeter</label><input id="helpQnh" inputmode="decimal" placeholder="29.92"></div>
+        <div class="field"><label>Units</label><select id="helpUnit"><option value="inhg">inHg</option><option value="hpa">hPa</option></select></div>
+      </div>
+      <div class="btnrow">
+        <button class="ghost" type="button" id="helpToDep">→ Dep PA</button>
+        <button class="ghost" type="button" id="helpToArr">→ Arr PA</button>
+        <span class="status" id="helpOut"></span>
+      </div>
+    </details>
+
+    <details class="adv">
+      <summary>Weather source (advanced)</summary>
+      <label style="margin-top:10px">CORS proxy prefix</label>
+      <input id="proxy" inputmode="url" autocomplete="off" list="proxyList" placeholder="https://corsproxy.io/?url=">
+      <datalist id="proxyList">
+        <option value="https://corsproxy.io/?url=">
+        <option value="https://api.allorigins.win/raw?url=">
+        <option value="">
+      </datalist>
+      <div class="hint">aviationweather.gov has no CORS headers, so a browser needs a proxy to read it. Leave blank to try a direct call (works in some apps/EFBs). The pull is optional — the card builds fine from typed OAT/PA. Nothing here affects offline use.</div>
+    </details>
+
+    <div class="btnrow">
+      <button class="ghost" id="fetchBtn" type="button">⤓ Fetch weather</button>
+      <button class="primary" id="buildBtn" type="button">Build card</button>
+      <button class="ghost" id="clearBtn" type="button">Clear</button>
+    </div>
+    <div class="status" id="buildStatus"></div>
+  </section>
+
+  <!-- ============ CARD OUTPUT ============ -->
+  <section id="cardOut">
+    <h2>Reference card</h2>
+    <p class="sub">Saved on this device — reopens offline. <span id="savedNote" style="color:var(--green)"></span></p>
+    <div class="card" id="cardBody"></div>
+    <div class="btnrow">
+      <button class="ghost" id="printBtn" type="button">⎙ Print / save PDF</button>
+      <button class="ghost" id="editBtn" type="button">Edit inputs</button>
+    </div>
+  </section>
+
+  <!-- ============ MANUAL LOOKUP ============ -->
+  <section id="manualPanel">
+    <h2>Manual lookup</h2>
+    <p class="sub">Exact chart cells by phase — the in-flight authority. Pick the published grid values; corrections are chart-accurate per phase.</p>
+    <div class="tabs" id="tabs"></div>
+    <div class="grid g2">
+      <div class="field"><label id="rowLbl">OAT °C</label><select id="mRow"></select></div>
+      <div class="field"><label id="colLbl">Press alt ft</label><select id="mCol"></select></div>
+    </div>
+    <div class="chips" id="mCorr" style="margin-top:12px"></div>
+    <div class="readout">
+      <div>
+        <div class="lbl"><span id="mPhaseName">Takeoff</span> target EPR</div>
+        <div class="big" id="mEpr">—</div>
+        <div class="calc" id="mCalc"></div>
+      </div>
+      <div class="badge" id="mCode" style="font-size:16px; padding:8px 12px">TO</div>
+    </div>
+    <div class="bracket">
+      <div class="bh">Bracketing chart cells (cross-check)</div>
+      <div class="bgrid" id="mBracket"></div>
+    </div>
+  </section>
+
+  <!-- ============ RAW TABLES ============ -->
+  <section id="rawPanel">
+    <h2>Full charts</h2>
+    <p class="sub">The complete transcribed tables, for direct reading.</p>
+    <div id="rawTables"></div>
+  </section>
+
+  <div class="foot">
+    PW2037 manual-EPR backup · <span id="ver"></span><br>
+    Data transcribed from operator thrust-setting charts · verify against AFM/QRH.
+  </div>
+
+</div>
+
+<script>
+/* ====================== CACHE / SW ====================== */
+const CACHE_VERSION = "tmc-epr-v1.0.1";
+document.getElementById("ver").textContent = CACHE_VERSION;
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("sw.js", { scope: "./" }).catch(()=>{});
+  });
+}
+
+/* ====================== EPR DATA ====================== */
+const EPR = {
+  takeoff:{ label:"Takeoff", code:"TO", rowName:"OAT °C", colName:"Press alt ft",
+    cols:[-1000,0,1000,2000,3000,4000,5000,6000,7000,8000,9000,10000],
+    rows:[55,54,52,50,48,46,44,42,40,38,36,34,32,30,28,26,24,22,20,18,16,14,12,10,5],
+    rowLabels:{5:"5 & below"},
+    data:[
+      [1.28,1.28,1.28,1.28,1.28,1.28,1.28,1.28,1.28,1.28,1.28,1.28],
+      [1.29,1.29,1.29,1.29,1.29,1.29,1.29,1.29,1.29,1.29,1.29,1.29],
+      [1.30,1.30,1.30,1.30,1.30,1.30,1.30,1.30,1.30,1.30,1.30,1.30],
+      [1.31,1.31,1.31,1.31,1.31,1.31,1.31,1.31,1.31,1.31,1.31,1.31],
+      [1.33,1.33,1.33,1.33,1.33,1.33,1.33,1.33,1.33,1.33,1.33,1.33],
+      [1.34,1.34,1.34,1.34,1.34,1.34,1.34,1.34,1.34,1.34,1.34,1.34],
+      [1.35,1.35,1.36,1.36,1.36,1.36,1.36,1.36,1.36,1.36,1.36,1.36],
+      [1.36,1.36,1.37,1.37,1.37,1.37,1.37,1.37,1.37,1.37,1.37,1.37],
+      [1.37,1.37,1.38,1.39,1.39,1.39,1.39,1.39,1.39,1.39,1.39,1.39],
+      [1.38,1.38,1.38,1.38,1.39,1.40,1.40,1.40,1.40,1.40,1.40,1.40],
+      [1.39,1.39,1.40,1.40,1.40,1.41,1.42,1.42,1.42,1.42,1.42,1.42],
+      [1.40,1.40,1.40,1.41,1.42,1.43,1.43,1.43,1.43,1.43,1.43,1.43],
+      [1.40,1.40,1.41,1.42,1.43,1.44,1.44,1.44,1.44,1.44,1.44,1.44],
+      [1.40,1.41,1.43,1.43,1.44,1.45,1.45,1.45,1.45,1.45,1.45,1.45],
+      [1.40,1.41,1.43,1.45,1.45,1.46,1.47,1.47,1.47,1.47,1.47,1.47],
+      [1.40,1.41,1.43,1.45,1.46,1.47,1.48,1.48,1.48,1.48,1.48,1.48],
+      [1.40,1.41,1.43,1.45,1.47,1.48,1.49,1.49,1.49,1.49,1.49,1.49],
+      [1.40,1.41,1.43,1.45,1.47,1.48,1.49,1.49,1.49,1.49,1.49,1.49],
+      [1.40,1.41,1.43,1.45,1.47,1.49,1.51,1.52,1.52,1.52,1.52,1.52],
+      [1.40,1.41,1.43,1.45,1.47,1.49,1.51,1.53,1.53,1.53,1.53,1.53],
+      [1.40,1.41,1.43,1.45,1.47,1.49,1.51,1.53,1.54,1.54,1.54,1.54],
+      [1.40,1.41,1.43,1.45,1.47,1.49,1.51,1.53,1.54,1.55,1.55,1.55],
+      [1.40,1.41,1.43,1.45,1.47,1.49,1.51,1.53,1.54,1.56,1.56,1.56],
+      [1.40,1.41,1.43,1.45,1.47,1.49,1.51,1.53,1.54,1.56,1.57,1.57],
+      [1.40,1.41,1.43,1.45,1.47,1.49,1.51,1.53,1.54,1.56,1.57,1.58]],
+    corrections:[
+      {id:"packsOff",label:"Packs OFF",value:()=>0.01},
+      {id:"engAI",label:"Engine A/I ON",value:pa=>pa>8000?-0.03:0.00,note:"0.00 ≤8000 ft · −0.03 >8000 ft"}],
+  },
+  climb:{ label:"Max Climb", code:"CLB", rowName:"TAT °C", colName:"Press alt ft",
+    cols:[0,5000,10000,15000,20000,25000,30000,35000,37000,41000],
+    rows:[40,38,36,34,32,30,28,26,24,22,20,18,16,14,12,10,5,0,-5,-10,-15,-20],
+    rowLabels:{"-20":"-20 & below"},
+    data:[
+      [1.22,1.21,1.18,1.15,1.12,1.10,1.08,1.08,1.07,1.06],
+      [1.23,1.21,1.19,1.16,1.12,1.11,1.09,1.08,1.08,1.07],
+      [1.23,1.23,1.19,1.17,1.13,1.12,1.10,1.09,1.09,1.08],
+      [1.24,1.24,1.20,1.18,1.14,1.14,1.12,1.10,1.10,1.09],
+      [1.24,1.25,1.21,1.18,1.16,1.15,1.12,1.11,1.11,1.10],
+      [1.24,1.25,1.22,1.19,1.16,1.15,1.14,1.12,1.12,1.11],
+      [1.24,1.26,1.23,1.20,1.17,1.16,1.14,1.13,1.13,1.12],
+      [1.24,1.27,1.24,1.21,1.18,1.17,1.16,1.15,1.14,1.13],
+      [1.24,1.27,1.25,1.23,1.19,1.19,1.17,1.16,1.15,1.14],
+      [1.24,1.27,1.26,1.24,1.20,1.20,1.18,1.17,1.17,1.16],
+      [1.24,1.27,1.27,1.25,1.22,1.21,1.19,1.18,1.18,1.17],
+      [1.24,1.27,1.28,1.26,1.23,1.22,1.20,1.19,1.19,1.18],
+      [1.24,1.27,1.28,1.27,1.24,1.24,1.22,1.21,1.21,1.20],
+      [1.24,1.27,1.28,1.27,1.25,1.25,1.23,1.22,1.22,1.21],
+      [1.24,1.27,1.28,1.27,1.26,1.26,1.24,1.23,1.23,1.22],
+      [1.24,1.27,1.28,1.27,1.27,1.27,1.26,1.25,1.25,1.24],
+      [1.24,1.27,1.28,1.27,1.29,1.31,1.29,1.28,1.29,1.28],
+      [1.24,1.27,1.28,1.27,1.29,1.31,1.34,1.33,1.33,1.32],
+      [1.24,1.27,1.28,1.27,1.29,1.31,1.36,1.37,1.37,1.36],
+      [1.24,1.27,1.28,1.27,1.29,1.31,1.36,1.42,1.42,1.41],
+      [1.24,1.27,1.28,1.27,1.29,1.31,1.36,1.46,1.47,1.46],
+      [1.24,1.27,1.28,1.27,1.29,1.31,1.36,1.46,1.49,1.48]],
+    corrections:[
+      {id:"packsOff",label:"Packs OFF",byCol:[0.01,0.01,0.01,0.01,0.02,0.03,0.03,0.04,0.04,0.05]},
+      {id:"engAI",label:"Engine A/I ON",byCol:[0.00,0.00,-0.03,-0.03,-0.04,-0.04,-0.05,-0.06,-0.06,-0.08]},
+      {id:"wingAI",label:"Wing A/I ON",byCol:[-0.02,-0.02,-0.02,-0.03,-0.03,-0.03,-0.04,-0.05,-0.06,-0.07]}],
+  },
+  cruise:{ label:"Max Cruise", code:"CRZ", rowName:"TAT °C", colName:"Press alt ft",
+    cols:[10000,15000,20000,25000,30000,32000,34000,36000,38000,40000,42000],
+    rows:[45,40,35,30,25,20,15,10,5,0,-5,-10,-15,-20,-25,-30,-35,-40,-45,-50,-55,-60],
+    rowLabels:{},
+    data:[
+      [1.08,1.06,1.01,0.99,1.00,0.89,0.90,0.90,0.90,0.90,0.90],
+      [1.10,1.08,1.04,1.02,1.03,0.93,0.94,0.94,0.94,0.94,0.94],
+      [1.12,1.11,1.07,1.05,1.06,0.97,0.98,0.98,0.98,0.98,0.98],
+      [1.14,1.13,1.10,1.08,1.09,1.01,1.02,1.02,1.02,1.02,1.02],
+      [1.16,1.16,1.13,1.11,1.12,1.05,1.06,1.06,1.06,1.06,1.06],
+      [1.16,1.18,1.16,1.14,1.15,1.09,1.10,1.10,1.10,1.10,1.10],
+      [1.16,1.19,1.19,1.17,1.18,1.13,1.14,1.14,1.14,1.14,1.14],
+      [1.16,1.19,1.21,1.20,1.21,1.17,1.18,1.18,1.18,1.18,1.18],
+      [1.16,1.19,1.21,1.23,1.24,1.21,1.22,1.22,1.22,1.22,1.22],
+      [1.16,1.19,1.21,1.23,1.27,1.25,1.26,1.26,1.26,1.26,1.26],
+      [1.16,1.19,1.21,1.23,1.29,1.29,1.30,1.30,1.30,1.30,1.30],
+      [1.16,1.19,1.21,1.23,1.29,1.32,1.34,1.34,1.34,1.34,1.34],
+      [1.16,1.19,1.21,1.23,1.29,1.32,1.36,1.38,1.38,1.38,1.38],
+      [1.16,1.19,1.21,1.23,1.29,1.32,1.36,1.40,1.40,1.40,1.40],
+      [1.16,1.19,1.21,1.23,1.29,1.32,1.36,1.40,1.40,1.40,1.40],
+      [1.16,1.19,1.21,1.23,1.29,1.32,1.36,1.40,1.40,1.40,1.40],
+      [1.16,1.19,1.21,1.23,1.29,1.32,1.36,1.40,1.40,1.40,1.40],
+      [1.16,1.19,1.21,1.23,1.29,1.32,1.36,1.40,1.40,1.40,1.40],
+      [1.16,1.19,1.21,1.23,1.29,1.32,1.36,1.40,1.40,1.40,1.40],
+      [1.16,1.19,1.21,1.23,1.29,1.32,1.36,1.40,1.40,1.40,1.40],
+      [1.16,1.19,1.21,1.23,1.29,1.32,1.36,1.40,1.40,1.40,1.40],
+      [1.16,1.19,1.21,1.23,1.29,1.32,1.36,1.40,1.40,1.40,1.40]],
+    corrections:[
+      {id:"engAI",label:"Engine A/I ON",byCol:[-0.03,-0.03,-0.04,-0.05,-0.05,-0.06,-0.06,-0.06,-0.09,-0.09,-0.09]},
+      {id:"engWingAI",label:"Engine + Wing A/I ON",byCol:[-0.06,-0.06,-0.07,-0.09,-0.09,-0.11,-0.11,-0.11,-0.17,-0.17,-0.17]}],
+  },
+  goaround:{ label:"Go-Around", code:"GA", rowName:"OAT °C", colName:"Press alt ft",
+    cols:[-1000,0,1000,2000,3000,4000,5000,6000,7000,8000,8400,9000,10000],
+    rows:[50,48,46,44,42,40,38,36,34,32,30,28,26,24,22,20,18,16],
+    rowLabels:{16:"16 & below"},
+    data:[
+      [1.29,1.29,1.29,1.29,1.29,1.29,1.29,1.29,1.29,1.29,1.29,1.29,1.29],
+      [1.30,1.30,1.30,1.30,1.30,1.30,1.30,1.30,1.30,1.30,1.30,1.30,1.30],
+      [1.31,1.31,1.31,1.31,1.31,1.31,1.31,1.31,1.31,1.31,1.31,1.32,1.32],
+      [1.33,1.33,1.33,1.33,1.33,1.33,1.33,1.33,1.33,1.33,1.33,1.33,1.33],
+      [1.34,1.34,1.34,1.34,1.34,1.34,1.34,1.34,1.34,1.34,1.34,1.34,1.34],
+      [1.35,1.35,1.36,1.36,1.36,1.36,1.36,1.36,1.36,1.36,1.36,1.36,1.35],
+      [1.36,1.36,1.37,1.37,1.37,1.37,1.37,1.37,1.37,1.37,1.37,1.37,1.37],
+      [1.37,1.37,1.37,1.38,1.39,1.39,1.39,1.39,1.39,1.39,1.39,1.39,1.39],
+      [1.38,1.38,1.38,1.39,1.40,1.40,1.40,1.40,1.40,1.40,1.40,1.40,1.40],
+      [1.38,1.38,1.39,1.40,1.41,1.41,1.42,1.42,1.42,1.42,1.42,1.42,1.42],
+      [1.39,1.39,1.40,1.41,1.41,1.42,1.43,1.43,1.43,1.43,1.43,1.43,1.43],
+      [1.39,1.40,1.41,1.42,1.43,1.44,1.45,1.45,1.45,1.45,1.45,1.44,1.44],
+      [1.39,1.40,1.42,1.43,1.44,1.45,1.46,1.46,1.46,1.46,1.46,1.46,1.46],
+      [1.39,1.40,1.42,1.43,1.44,1.45,1.46,1.46,1.46,1.46,1.46,1.47,1.47],
+      [1.39,1.40,1.42,1.43,1.45,1.47,1.48,1.48,1.48,1.48,1.48,1.48,1.48],
+      [1.39,1.40,1.42,1.43,1.45,1.47,1.49,1.49,1.49,1.49,1.49,1.49,1.49],
+      [1.39,1.40,1.42,1.43,1.45,1.47,1.49,1.50,1.50,1.50,1.50,1.50,1.50],
+      [1.39,1.40,1.42,1.43,1.45,1.47,1.49,1.51,1.51,1.51,1.52,1.52,1.52]],
+    corrections:[
+      {id:"packsOff",label:"Packs OFF",value:()=>0.01},
+      {id:"engAI",label:"Engine A/I ON",value:()=>0.00},
+      {id:"wingAI",label:"Wing A/I ON (2 eng)",value:()=>-0.02},
+      {id:"fast",label:"Speed over 160 KIAS",value:()=>-0.01}],
+    note:"Ships certified for TO to 8,400 ft. Certified to 9,500 ft: 636, 638, 640–641, 6815–6817, 6901–6904.",
+  },
+};
+const PHASE_ORDER = ["takeoff","climb","cruise","goaround"];
+
+function nearestIdx(a,v){let b=0,bd=Infinity;for(let i=0;i<a.length;i++){const d=Math.abs(a[i]-v);if(d<bd){bd=d;b=i;}}return b;}
+function rowIdxFor(t,x){const r=t.rows;if(x>=r[0])return 0;if(x<=r[r.length-1])return r.length-1;return nearestIdx(r,x);}
+function colIdxFor(t,x){const c=t.cols;if(x<=c[0])return 0;if(x>=c[c.length-1])return c.length-1;return nearestIdx(c,x);}
+function rowLabel(t,i){const v=t.rows[i];return (t.rowLabels&&t.rowLabels[v]!=null)?t.rowLabels[v]:String(v);}
+function r2(n){return Math.round(n*100)/100;}
+function fmt(n){return n.toFixed(2);}
+
+function lookupEPR(key,temp,pa,corrIds){
+  const t=EPR[key], ri=rowIdxFor(t,temp), ci=colIdxFor(t,pa), base=t.data[ri][ci];
+  let total=0; const applied=[];
+  (t.corrections||[]).forEach(c=>{ if(corrIds&&corrIds.includes(c.id)){
+    const v=c.byCol?c.byCol[ci]:c.value(pa); total+=v; applied.push({label:c.label,value:v}); }});
+  const neigh=[]; for(const dr of[0,1])for(const dc of[0,1]){
+    const r=Math.min(ri+dr,t.rows.length-1),cc=Math.min(ci+dc,t.cols.length-1);
+    neigh.push({row:rowLabel(t,r),col:t.cols[cc],epr:t.data[r][cc],hit:(r===ri&&cc===ci)});}
+  return {phase:t.label,code:t.code,usedRowLabel:rowLabel(t,ri),usedCol:t.cols[ci],
+    rowName:t.rowName,colName:t.colName,base,applied,correctionTotal:r2(total),final:r2(base+total),neigh,ri,ci};
+}
+
+/* ====================== ATMOS HELPERS ====================== */
+const M2FT=3.28084;
+function paFromElevAltim(elevFt,altim,unit){
+  const inHg = unit==="hpa" ? altim*0.0295299830714 : altim;
+  return Math.round(elevFt + (29.92 - inHg)*1000);
+}
+function isaSAT(altFt){ return altFt<=36089 ? 15 - 1.98*(altFt/1000) : -56.5; }
+function tatFromSAT(satC,mach){ return (satC+273.15)*(1+0.2*mach*mach) - 273.15; }
+
+/* ====================== ELEMENTS ====================== */
+const $=id=>document.getElementById(id);
+const els={
+  depIcao:$("depIcao"),arrIcao:$("arrIcao"),depOat:$("depOat"),depPa:$("depPa"),
+  arrOat:$("arrOat"),arrPa:$("arrPa"),cruiseFl:$("cruiseFl"),
+  packsOff:$("cfgPacksOff"),engAI:$("cfgEngAI"),wingAI:$("cfgWingAI"),
+  proxy:$("proxy"),buildStatus:$("buildStatus"),cardOut:$("cardOut"),cardBody:$("cardBody"),savedNote:$("savedNote"),
+};
+const SKEY="tmcEprState";
+function saveState(extra){
+  const s=Object.assign({
+    depIcao:els.depIcao.value,arrIcao:els.arrIcao.value,depOat:els.depOat.value,depPa:els.depPa.value,
+    arrOat:els.arrOat.value,arrPa:els.arrPa.value,cruiseFl:els.cruiseFl.value,
+    packsOff:els.packsOff.checked,engAI:els.engAI.checked,wingAI:els.wingAI.checked,proxy:els.proxy.value,
+  }, extra||{});
+  try{localStorage.setItem(SKEY,JSON.stringify(s));}catch(e){}
+}
+function loadState(){ try{return JSON.parse(localStorage.getItem(SKEY)||"{}");}catch(e){return {};} }
+
+/* config chip active styling */
+function syncChips(){
+  document.querySelectorAll("#cfgChips .chip").forEach(ch=>{
+    const i=ch.querySelector("input"); ch.classList.toggle("on", i.checked);
+  });
+}
+["packsOff","engAI","wingAI"].forEach(k=>els[k].addEventListener("change",()=>{syncChips();saveState();}));
+
+/* ====================== WEATHER FETCH ====================== */
+function setStatus(msg,cls){els.buildStatus.className="status "+(cls||"");els.buildStatus.textContent=msg;}
+
+async function fetchOne(icao,proxy){
+  const base="https://aviationweather.gov/api/data/";
+  const mUrl=base+"metar?ids="+encodeURIComponent(icao)+"&format=json";
+  const tUrl=base+"taf?ids="+encodeURIComponent(icao)+"&format=json";
+  const wrap=u=> proxy ? proxy+encodeURIComponent(u) : u;
+  const m = await fetch(wrap(mUrl),{cache:"no-store"}).then(r=>r.json());
+  let taf=null;
+  try{ const tj=await fetch(wrap(tUrl),{cache:"no-store"}).then(r=>r.json());
+       if(Array.isArray(tj)&&tj.length) taf=tj[0]; }catch(e){}
+  const ob=Array.isArray(m)?m[0]:m;
+  if(!ob||ob.temp==null) throw new Error("no METAR for "+icao);
+  return {ob,taf};
+}
+
+$("fetchBtn").addEventListener("click", async ()=>{
+  const dep=els.depIcao.value.trim().toUpperCase(), arr=els.arrIcao.value.trim().toUpperCase();
+  if(dep.length<3 && arr.length<3){ setStatus("Enter at least one ICAO first.","err"); return; }
+  const proxy=els.proxy.value.trim();
+  setStatus("Contacting aviationweather.gov…","work");
+  $("fetchBtn").disabled=true;
+  try{
+    let got=[];
+    if(dep.length>=3){
+      const d=await fetchOne(dep,proxy);
+      els.depOat.value=Math.round(d.ob.temp);
+      els.depPa.value=paFromElevAltim((d.ob.elev||0)*M2FT, d.ob.altim, "hpa");
+      wxCache.dep=d; got.push(dep);
+    }
+    if(arr.length>=3){
+      const a=await fetchOne(arr,proxy);
+      els.arrOat.value=Math.round(a.ob.temp);
+      els.arrPa.value=paFromElevAltim((a.ob.elev||0)*M2FT, a.ob.altim, "hpa");
+      wxCache.arr=a; got.push(arr);
+    }
+    setStatus("Weather loaded for "+got.join(" & ")+". Review fields, then Build card.","ok");
+    saveState();
+  }catch(err){
+    setStatus("Couldn’t pull weather ("+err.message+"). Type OAT/PA from ATIS/FMC and Build card — works the same.","err");
+  }finally{ $("fetchBtn").disabled=false; }
+});
+const wxCache={dep:null,arr:null};
+
+/* ====================== CARD BUILD ====================== */
+function activeCardCorr(phaseKey){
+  const t=EPR[phaseKey], ids=[]; const want={packsOff:els.packsOff.checked,engAI:els.engAI.checked,wingAI:els.wingAI.checked};
+  const has=id=>t.corrections.some(c=>c.id===id);
+  if(want.packsOff&&has("packsOff")) ids.push("packsOff");
+  if(phaseKey==="cruise"){
+    if(want.engAI&&want.wingAI) ids.push("engWingAI");
+    else if(want.engAI) ids.push("engAI");
+  }else{
+    if(want.engAI&&has("engAI")) ids.push("engAI");
+    if(want.wingAI&&has("wingAI")) ids.push("wingAI");
+  }
+  return ids;
+}
+function num(v){ const n=parseFloat(v); return isFinite(n)?n:null; }
+
+function buildCard(){
+  const depIcao=els.depIcao.value.trim().toUpperCase()||"DEP";
+  const arrIcao=els.arrIcao.value.trim().toUpperCase()||"ARR";
+  const depOat=num(els.depOat.value), depPa=num(els.depPa.value);
+  const arrOat=num(els.arrOat.value), arrPa=num(els.arrPa.value);
+  const fl=num(els.cruiseFl.value);
+  if(depOat==null||depPa==null){ setStatus("Need Dep OAT and Dep PA to build the card.","err"); return; }
+  const crzAlt = fl!=null ? fl*100 : 35000;
+
+  // Takeoff
+  const to=lookupEPR("takeoff",depOat,depPa,activeCardCorr("takeoff"));
+  // Go-around (use arrival if present, else departure)
+  const gaOat = arrOat!=null?arrOat:depOat, gaPa = arrPa!=null?arrPa:depPa;
+  const ga=lookupEPR("goaround",gaOat,gaPa,activeCardCorr("goaround"));
+  // Climb (ISA-estimated TAT at FL250 mid-climb)
+  const clbTat=Math.round(tatFromSAT(isaSAT(25000),0.78));
+  const clb=lookupEPR("climb",clbTat,25000,activeCardCorr("climb"));
+  // Cruise (ISA-estimated TAT at cruise FL, ± band)
+  const crzTat=Math.round(tatFromSAT(isaSAT(crzAlt),0.80));
+  const crzLo=lookupEPR("cruise",crzTat-10,crzAlt,activeCardCorr("cruise"));
+  const crzHi=lookupEPR("cruise",crzTat+10,crzAlt,activeCardCorr("cruise"));
+  const crz=lookupEPR("cruise",crzTat,crzAlt,activeCardCorr("cruise"));
+  const crzRange = crzLo.final===crzHi.final ? fmt(crz.final)
+    : fmt(Math.min(crzLo.final,crzHi.final,crz.final))+"–"+fmt(Math.max(crzLo.final,crzHi.final,crz.final));
+
+  const cfg=[]; if(els.packsOff.checked)cfg.push("Packs OFF"); if(els.engAI.checked)cfg.push("Eng A/I ON"); if(els.wingAI.checked)cfg.push("Wing A/I ON");
+  const cfgTxt=cfg.length?cfg.join(" · "):"Normal bleed · A/I off";
+  const stamp=new Date().toLocaleString([], {month:"short",day:"numeric",hour:"2-digit",minute:"2-digit"});
+
+  const wxCell=(icao,oat,pa,wx)=>{
+    const ob=wx&&wx.ob; const name=ob&&ob.name?ob.name:"";
+    const raw=ob&&ob.rawOb?ob.rawOb:""; const taf=wx&&wx.taf&&wx.taf.rawTAF?wx.taf.rawTAF:"";
+    return `<div class="cell"><div class="ap">${icao}<span class="nm">${esc(name)}</span></div>
+      <div class="line">OAT ${oat==null?"—":oat+"°C"} · PA ${pa==null?"—":Math.round(pa)+" ft"}</div>
+      ${raw?`<div class="raw">${esc(raw)}</div>`:""}${taf?`<div class="raw">${esc(taf)}</div>`:""}</div>`;
+  };
+  const phRow=(tag,sub,cond,eprHtml,cls)=>`<div class="ph"><div class="tag">${tag}<small>${sub}</small></div>
+     <div class="cond">${cond}</div><div class="epr ${cls||""}">${eprHtml}</div></div>`;
+
+  els.cardBody.innerHTML = `
+   <div class="card-h">
+     <div class="route">${depIcao}<span class="arr">→</span>${arrIcao}</div>
+     <div class="meta">PW2037 · FL${fl!=null?String(fl).padStart(3,"0"):"—"} · ${esc(cfgTxt)}</div>
+     <div class="stamp">${stamp}</div>
+   </div>
+   <div class="wx">${wxCell(depIcao,depOat,depPa,wxCache.dep)}${wxCell(arrIcao,arrOat,arrPa,wxCache.arr)}</div>
+   <div class="phases">
+     ${phRow("TO","Takeoff",`${depIcao} · ${depOat}°C · PA ${Math.round(depPa)}`, fmt(to.final))}
+     ${phRow("CLB","Max climb",`≈FL250 · TAT ${clbTat>=0?"+":""}${clbTat}°C (ISA est)`, fmt(clb.final),"range")}
+     ${phRow("CRZ","Max cruise",`FL${fl!=null?String(fl).padStart(3,"0"):"350"} · TAT ${crzTat>=0?"+":""}${crzTat}°C ±10 (ISA est)`, crzRange,"range")}
+     ${phRow("GA","Go-around",`${arrOat!=null?arrIcao:depIcao} · ${gaOat}°C · PA ${Math.round(gaPa)}`, fmt(ga.final))}
+   </div>
+   <div class="card-notes">
+     <b style="color:var(--amber)">Confirm every value against the QRH/AFM.</b>
+     <ul>
+       <li>Takeoff &amp; go-around: actual OAT and field PA. Climb/cruise TAT is an <b>ISA estimate</b> — reset from the actual TAT readout using Manual lookup.</li>
+       <li>${cfg.length?("Corrections applied for: "+esc(cfgTxt)+"."):"No bleed/anti-ice corrections applied."} Add Speed&gt;160 KIAS (−0.01) to GA if applicable.</li>
+       <li>Values snap to nearest chart grid point; read conservatively between published values.</li>
+     </ul>
+   </div>`;
+
+  els.cardOut.style.display="block";
+  els.savedNote.textContent="✓ saved · available offline";
+  saveState({cardBuilt:true, stamp});
+  els.cardOut.scrollIntoView({behavior:"smooth",block:"start"});
+  setStatus("Card built and saved to this device.","ok");
+}
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));}
+
+$("buildBtn").addEventListener("click",buildCard);
+$("printBtn").addEventListener("click",()=>window.print());
+$("editBtn").addEventListener("click",()=>$("buildPanel").scrollIntoView({behavior:"smooth"}));
+$("clearBtn").addEventListener("click",()=>{
+  ["depIcao","arrIcao","depOat","depPa","arrOat","arrPa","cruiseFl"].forEach(k=>els[k].value="");
+  wxCache.dep=wxCache.arr=null; setStatus("Cleared.","");
+});
+
+/* PA helper */
+$("paHelpBtn").addEventListener("click",()=>{const d=$("paHelp");d.open=true;d.scrollIntoView({behavior:"smooth",block:"center"});});
+function helpPA(){
+  const e=num($("helpElev").value), q=num($("helpQnh").value), u=$("helpUnit").value;
+  if(e==null||q==null){$("helpOut").textContent="Enter elevation and altimeter.";$("helpOut").className="status err";return null;}
+  const pa=paFromElevAltim(e,q,u); $("helpOut").textContent="PA = "+pa+" ft"; $("helpOut").className="status ok"; return pa;
+}
+$("helpToDep").addEventListener("click",()=>{const p=helpPA();if(p!=null)els.depPa.value=p;saveState();});
+$("helpToArr").addEventListener("click",()=>{const p=helpPA();if(p!=null)els.arrPa.value=p;saveState();});
+
+/* ====================== MANUAL LOOKUP ====================== */
+let mPhase="takeoff";
+const mCorrState={};
+function buildTabs(){
+  const c=$("tabs");c.innerHTML="";
+  PHASE_ORDER.forEach(k=>{
+    const b=document.createElement("button");b.className="tab"+(k===mPhase?" on":"");
+    b.textContent=EPR[k].code; b.title=EPR[k].label;
+    b.onclick=()=>{mPhase=k;buildTabs();buildManual();}; c.appendChild(b);
+  });
+}
+function buildManual(){
+  const t=EPR[mPhase];
+  $("rowLbl").textContent=t.rowName; $("colLbl").textContent=t.colName;
+  $("mPhaseName").textContent=t.label; $("mCode").textContent=t.code;
+  // rows
+  const rs=$("mRow"); rs.innerHTML="";
+  t.rows.forEach((v,i)=>{const o=document.createElement("option");o.value=i;o.textContent=rowLabel(t,i);rs.appendChild(o);});
+  // pick a sensible default near middle
+  if(rs.dataset.phase!==mPhase){ rs.value=Math.min(8,t.rows.length-1); rs.dataset.phase=mPhase; }
+  const cs=$("mCol"); cs.innerHTML="";
+  t.cols.forEach((v,i)=>{const o=document.createElement("option");o.value=i;o.textContent=v.toLocaleString();cs.appendChild(o);});
+  if(cs.dataset.phase!==mPhase){ cs.value=Math.min(3,t.cols.length-1); cs.dataset.phase=mPhase; }
+  // corrections chips for this phase
+  const mc=$("mCorr"); mc.innerHTML="";
+  (t.corrections||[]).forEach(c=>{
+    const id="mc_"+mPhase+"_"+c.id;
+    const lab=document.createElement("label"); lab.className="chip";
+    const inp=document.createElement("input"); inp.type="checkbox"; inp.id=id;
+    inp.checked=!!mCorrState[mPhase+c.id];
+    inp.onchange=()=>{mCorrState[mPhase+c.id]=inp.checked; lab.classList.toggle("on",inp.checked); calcManual();};
+    lab.classList.toggle("on",inp.checked);
+    const sp=document.createElement("span"); sp.textContent=c.label+(c.note?" *":"");
+    lab.appendChild(inp); lab.appendChild(sp); mc.appendChild(lab);
+  });
+  rs.onchange=cs.onchange=calcManual;
+  calcManual();
+}
+function calcManual(){
+  const t=EPR[mPhase], ri=+$("mRow").value, ci=+$("mCol").value;
+  const corrIds=(t.corrections||[]).filter(c=>mCorrState[mPhase+c.id]).map(c=>c.id);
+  const temp=t.rows[ri], pa=t.cols[ci];
+  const r=lookupEPR(mPhase,temp,pa,corrIds);
+  $("mEpr").textContent=fmt(r.final);
+  let calc=`base ${fmt(r.base)}`;
+  r.applied.forEach(a=>{ const v=a.value; calc+=`  <b>${v>=0?"+":"−"}${Math.abs(v).toFixed(2)}</b>`; });
+  if(r.applied.length) calc+=`  =  <span class="neu">${fmt(r.final)}</span>`;
+  $("mCalc").innerHTML=calc + (mPhase==="takeoff"||mPhase==="climb"||mPhase==="cruise"?"":"");
+  // bracket
+  const bg=$("mBracket"); bg.innerHTML="";
+  r.neigh.forEach(n=>{const d=document.createElement("div");d.className="bcell"+(n.hit?" hit":"");
+    d.innerHTML=`<span>${n.row} / ${n.col.toLocaleString()}</span><b>${fmt(n.epr)}</b>`; bg.appendChild(d);});
+}
+
+/* ====================== RAW TABLES ====================== */
+function buildRaw(){
+  const host=$("rawTables"); host.innerHTML="";
+  PHASE_ORDER.forEach((k,idx)=>{
+    const t=EPR[k];
+    const det=document.createElement("details");det.className="raw"; if(idx===0)det.open=true;
+    let h=`<summary>${t.code} — ${t.label} <small>· ${t.rowName} × ${t.colName}</small></summary><div class="tscroll"><table><thead><tr><th>${t.rowName.replace(" °C","")}</th>`;
+    t.cols.forEach(c=>h+=`<th>${c.toLocaleString()}</th>`); h+="</tr></thead><tbody>";
+    t.data.forEach((row,ri)=>{ h+=`<tr><th>${rowLabel(t,ri)}</th>`; row.forEach(v=>h+=`<td>${fmt(v)}</td>`); h+="</tr>"; });
+    h+="</tbody></table></div>";
+    if(t.note) h+=`<div class="hint" style="padding:0 14px 12px">${esc(t.note)}</div>`;
+    det.innerHTML=h; host.appendChild(det);
+  });
+}
+
+/* ====================== NET INDICATOR ====================== */
+function netUpdate(){
+  const on=navigator.onLine; const dot=$("netDot"),txt=$("netTxt");
+  dot.className="dot "+(on?"on":"off"); txt.textContent=on?"online":"offline · ready";
+}
+window.addEventListener("online",netUpdate); window.addEventListener("offline",netUpdate);
+
+/* ====================== INIT ====================== */
+function restore(){
+  const s=loadState();
+  ["depIcao","arrIcao","depOat","depPa","arrOat","arrPa","cruiseFl"].forEach(k=>{ if(s[k]!=null)els[k].value=s[k]; });
+  if(s.packsOff)els.packsOff.checked=true; if(s.engAI)els.engAI.checked=true; if(s.wingAI)els.wingAI.checked=true;
+  els.proxy.value = s.proxy!=null ? s.proxy : "https://corsproxy.io/?url=";
+  syncChips();
+  if(s.cardBuilt){ buildCard(); setStatus("Restored saved card.","ok"); }
+}
+[ "depIcao","arrIcao","depOat","depPa","arrOat","arrPa","cruiseFl","proxy"].forEach(k=>els[k].addEventListener("input",()=>saveState()));
+buildTabs(); buildManual(); buildRaw(); netUpdate(); restore();
+</script>
+</body>
+</html>
